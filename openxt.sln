@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "openxt", "openxt.csproj", "{DDDF840F-AF38-4B45-A5CB-39056D5A26EB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DDDF840F-AF38-4B45-A5CB-39056D5A26EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DDDF840F-AF38-4B45-A5CB-39056D5A26EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DDDF840F-AF38-4B45-A5CB-39056D5A26EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DDDF840F-AF38-4B45-A5CB-39056D5A26EB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
