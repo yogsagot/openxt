@@ -1,0 +1,40 @@
+{
+  "ships": [
+    {
+      "id": "argon_discoverer",
+      "name": "Discoverer",
+      "mass": 8000,
+      "mainThrust": 320000,
+      "maneuverThrust": 90000,
+      "pitchRate": 1.6,
+      "yawRate": 1.4,
+      "rollRate": 2.6,
+      "cruiseSpeed": 168,
+      "hullRadius": 9
+    },
+    {
+      "id": "argon_mercury",
+      "name": "Mercury",
+      "mass": 90000,
+      "mainThrust": 900000,
+      "maneuverThrust": 180000,
+      "pitchRate": 0.5,
+      "yawRate": 0.45,
+      "rollRate": 0.7,
+      "cruiseSpeed": 78,
+      "hullRadius": 34
+    },
+    {
+      "id": "teladi_vulture",
+      "name": "Vulture",
+      "mass": 140000,
+      "mainThrust": 1100000,
+      "maneuverThrust": 220000,
+      "pitchRate": 0.35,
+      "yawRate": 0.3,
+      "rollRate": 0.5,
+      "cruiseSpeed": 62,
+      "hullRadius": 46
+    }
+  ]
+}

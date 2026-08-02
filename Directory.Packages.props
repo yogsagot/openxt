@@ -1,0 +1,24 @@
+<Project>
+
+    <PropertyGroup>
+        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- Framework layer. MIT. -->
+        <PackageVersion Include="MonoGame.Framework.DesktopGL" Version="3.8.5"/>
+
+        <!-- Simulation layer. DefaultEcs = MIT, BepuPhysics = Apache-2.0. -->
+        <PackageVersion Include="DefaultEcs" Version="0.17.2"/>
+        <PackageVersion Include="BepuPhysics" Version="2.4.0"/>
+
+        <!-- Dev tooling only. ImGui.NET = MIT. Pinned: we ship our own MonoGame backend
+             (Rendering/ImGuiRenderer.cs) written against this exact API surface. 1.92+
+             replaced the font-atlas texture API and will not compile against it. -->
+        <PackageVersion Include="ImGui.NET" Version="1.91.6.1"/>
+
+        <!-- Offline asset import only, never referenced by the game or sim. AssimpNet = MIT. -->
+        <PackageVersion Include="AssimpNet" Version="4.1.0"/>
+    </ItemGroup>
+
+</Project>

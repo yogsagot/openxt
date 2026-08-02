@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <!--
+      Headless simulation layer. This project must NEVER reference MonoGame.
+      That is the compiler-enforced version of the layering rule in CLAUDE.md:
+      if a system needs a GraphicsDevice, it does not belong here.
+    -->
+
+    <PropertyGroup>
+        <RootNamespace>OpenXt.Sim</RootNamespace>
+        <AssemblyName>OpenXt.Sim</AssemblyName>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="DefaultEcs"/>
+        <PackageReference Include="BepuPhysics"/>
+    </ItemGroup>
+
+</Project>

@@ -2,8 +2,9 @@
 
 A code-first recreation of a classic 3D space sim XBTF/X-Tension from EGOSOFT in C#.
 
-Current state: greenfield. `Program.cs` is still the template `Hello, World!`. Nothing below describes existing code —
-it describes the decisions the code should follow.
+Current state: the skeleton is up and runs. Three projects, the fixed-step loop, the flight model, the Bepu broadphase,
+the ImGui debug overlay and the data-driven ship catalog all exist and build; there is no art, no AI, no economy and no
+missions yet. Everything below is binding on new code.
 
 ## Non-negotiable constraints
 
@@ -25,14 +26,29 @@ assumptions.
 
 Chosen libraries:
 
-| Concern             | Library               | Notes                                                           |
-|---------------------|-----------------------|-----------------------------------------------------------------|
-| Entity model        | DefaultEcs            | Structs-as-components, code-only composition                    |
-| Physics / collision | BepuPhysics v2        | Use mostly for broadphase + collision queries; flight is custom |
-| Debug UI            | ImGui.NET             | Dev tooling only — never the shipping HUD                       |
-| Model import        | AssimpNet             | Offline/import-time, not a runtime dependency if avoidable      |
-| Serialization       | System.Text.Json      | Source-generated contexts; avoid reflection on hot paths        |
-| Audio               | OpenAL (via MonoGame) | Keep behind our own interface so a backend swap stays cheap     |
+Versions are centrally managed in `Directory.Packages.props`; projects reference packages without a version.
+
+| Concern             | Library                       | Notes                                                           |
+|---------------------|-------------------------------|-----------------------------------------------------------------|
+| Framework           | MonoGame.Framework.DesktopGL  | 3.8.5, MIT                                                      |
+| Entity model        | DefaultEcs 0.17.2             | Structs-as-components, code-only composition                    |
+| Physics / collision | BepuPhysics 2.4.0             | Use mostly for broadphase + collision queries; flight is custom |
+| Debug UI            | ImGui.NET 1.91.6.1            | Dev tooling only — never the shipping HUD                       |
+| Model import        | AssimpNet 4.1.0               | Offline only, in `tools/` — the game never references it        |
+| Serialization       | System.Text.Json              | Source-generated contexts; avoid reflection on hot paths        |
+| Audio               | OpenAL (via MonoGame)         | Keep behind our own interface so a backend swap stays cheap     |
+
+Two version pins are load-bearing:
+
+- **ImGui.NET stays at 1.91.6.1.** There is no usable ImGui-for-MonoGame package (the only one on NuGet ships its
+  assembly outside `lib/`, so NuGet won't reference it), so `src/OpenXt.Game/Rendering/ImGuiRenderer.cs` is our own
+  backend. 1.92 replaced the font-atlas texture API; bumping the pin means rewriting that file.
+- **AssimpNet needs `NativeLoaderShim`.** Its last release is from 2019 and it P/Invokes `dlopen` from `libdl.so`,
+  which glibc 2.34 folded into libc. `tools/OpenXt.AssetImport/NativeLoaderShim.cs` redirects it. If that package
+  becomes more trouble than it's worth, replace it with Silk.NET.Assimp or SharpGLTF — nothing else depends on it.
+
+No MonoGame Content Builder (MGCB). The project is code-first with its own async loading and uses ImGui rather than a
+SpriteFont, so nothing needs the content pipeline yet. Add `MonoGame.Content.Builder.Task` when something actually does.
 
 Deliberately rejected, and why — don't re-litigate without the owner:
 
@@ -44,20 +60,31 @@ Deliberately rejected, and why — don't re-litigate without the owner:
 
 ## Architecture
 
-Two layers, kept strictly apart:
+Two layers, kept strictly apart — and the separation is enforced by the project graph, not by
+discipline: `OpenXt.Sim` has no MonoGame reference, so sim code that reaches for a `GraphicsDevice`
+does not compile.
 
 ```
-Game (MonoGame entry point, owns the loop and the graphics device)
- ├── Universe      — persistent world state, save/load root
- ├── Sector        — one simulated locale; spatial index lives here
- ├── Ship          — data-driven definitions; no hardcoded stats
- ├── Flight        — custom Newtonian-ish model, NOT Bepu rigid bodies
- ├── AI            — steering, combat, formation
- ├── Economy       — commodities, prices, production
- ├── Mission       — objectives, triggers, scripting-in-C#
- ├── Rendering     — our own renderer modules over MonoGame's device
- └── Networking    — optional, later; do not design around it yet
+openxt.sln
+├── src/OpenXt.Sim              headless simulation — DefaultEcs + BepuPhysics, no MonoGame
+│   ├── Universe.cs             persistent world state, save/load root
+│   ├── Sector.cs               one simulated locale; owns its ECS world and broadphase
+│   ├── FixedStepClock.cs       fixed-timestep accumulator with a spiral-of-death guard
+│   ├── Components/             structs only, no behaviour
+│   ├── Systems/                FlightSystem; AI, Economy, Mission go here
+│   ├── Flight/FlightModel.cs   custom integrator — the feel lives here
+│   ├── Physics/                Bepu wrapper + narrow-phase / pose-integrator callbacks
+│   └── Data/                   ShipDefinition, ShipCatalog, source-generated JSON context
+├── src/OpenXt.Game             window, graphics device, input, render loop
+│   ├── OpenXtGame.cs           the only place the two layers meet
+│   ├── Rendering/              Camera, DebugShapeRenderer, ImGuiRenderer (our ImGui backend)
+│   └── Debug/DebugOverlay.cs   dev overlay, F1
+├── tools/OpenXt.AssetImport    offline Assimp importer; nothing else references it
+└── data/                       ship catalog and other authored content, copied to output
 ```
+
+Still to build: AI, Economy, Mission, real meshes and materials, spatial partitioning, save/load,
+and networking (optional, later — do not design around it yet).
 
 Rules:
 
@@ -85,8 +112,12 @@ Rules:
 
 ## Working on this project
 
-- Build: `dotnet build`. Run: `dotnet run`.
+- Build everything: `dotnet build`.
+- Run the game: `dotnet run --project src/OpenXt.Game`.
+  Controls: `W/S` thrust, `A/D` strafe, `R/F` lift, arrows pitch/yaw, `Q/E` roll, `F1` overlay, `Esc` quit.
+- Inspect a model: `dotnet run --project tools/OpenXt.AssetImport -- path/to/model.obj`.
 - There's no test project yet. When adding one, the simulation layer's headless-ness is what makes it testable — protect
-  that property.
+  that property. A `Universe` can be stepped in a plain console host with no window; if that ever stops being true,
+  something has leaked across the layer boundary.
 - When adding a dependency, state the license in the PR/commit description. Anything not in the OSS list above needs the
   owner's sign-off.

@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <!--
+      Offline asset importer. Assimp is a build-time tool, not a shipping dependency: the game
+      loads pre-converted meshes, so neither OpenXt.Game nor OpenXt.Sim references this project.
+    -->
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <RootNamespace>OpenXt.AssetImport</RootNamespace>
+        <AssemblyName>openxt-import</AssemblyName>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="AssimpNet"/>
+    </ItemGroup>
+
+</Project>

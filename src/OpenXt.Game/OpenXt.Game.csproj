@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <!--
+      Presentation layer: window, graphics device, input, and the render loop.
+      It may reference the sim; the sim may never reference it.
+
+      No MonoGame Content Builder (MGCB) here on purpose. This project is code-first with its own
+      async asset loading, and the debug UI is ImGui rather than a SpriteFont, so nothing needs the
+      content pipeline yet. Add MonoGame.Content.Builder.Task only when something actually does.
+    -->
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <RootNamespace>OpenXt.Game</RootNamespace>
+        <AssemblyName>OpenXt</AssemblyName>
+        <TieredPGO>true</TieredPGO>
+        <ServerGarbageCollection>false</ServerGarbageCollection>
+        <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MonoGame.Framework.DesktopGL"/>
+        <PackageReference Include="ImGui.NET"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\OpenXt.Sim\OpenXt.Sim.csproj"/>
+    </ItemGroup>
+
+    <!-- Game data lives at the repo root and is content, not code. -->
+    <ItemGroup>
+        <None Include="..\..\data\**\*.json" LinkBase="data" CopyToOutputDirectory="PreserveNewest"/>
+    </ItemGroup>
+
+</Project>
