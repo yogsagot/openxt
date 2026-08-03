@@ -16,7 +16,12 @@ public sealed class DebugOverlay
     private bool _visible = true;
 
     public void Draw(
-        Universe universe, FixedStepClock clock, Entity player, AssetCache assets, ShipCatalog catalog)
+        Universe universe,
+        FixedStepClock clock,
+        Entity player,
+        AssetCache assets,
+        ShipCatalog catalog,
+        bool windowFocused)
     {
         if (ImGui.IsKeyPressed(ImGuiKey.F1, repeat: false))
             _visible = !_visible;
@@ -71,6 +76,13 @@ public sealed class DebugOverlay
             ImGui.Text($"Position    {pose.Position.X,8:F0} {pose.Position.Y,8:F0} {pose.Position.Z,8:F0}");
             ImGui.Text($"Speed       {motion.Linear.Length(),8:F1} m/s");
             ImGui.Text($"Angular     {motion.Angular.X,6:F2} {motion.Angular.Y,6:F2} {motion.Angular.Z,6:F2}");
+
+            // Input is only read while the window has focus; MonoGame's keyboard state is global,
+            // so this line is the quickest way to tell a stuck key from a physics problem.
+            FlightControl control = player.Get<FlightControl>();
+            ImGui.Text($"Focus       {(windowFocused ? "yes" : "no")}");
+            ImGui.Text($"Thrust      {control.Thrust.X,6:F2} {control.Thrust.Y,6:F2} {control.Thrust.Z,6:F2}");
+            ImGui.Text($"Turn        {control.Turn.X,6:F2} {control.Turn.Y,6:F2} {control.Turn.Z,6:F2}");
 
             ImGui.Separator();
             ImGui.TextDisabled("W/S thrust  A/D strafe  R/F lift");

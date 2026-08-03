@@ -25,6 +25,7 @@ public sealed class ImGuiRenderer : IDisposable
         new VertexElement(16, VertexElementFormat.Color, VertexElementUsage.Color, 0));
 
     private readonly GraphicsDevice _device;
+    private readonly Microsoft.Xna.Framework.Game _game;
     private readonly Dictionary<IntPtr, Texture2D> _textures = [];
     private readonly RasterizerState _rasterizer = new()
     {
@@ -52,6 +53,7 @@ public sealed class ImGuiRenderer : IDisposable
     public ImGuiRenderer(Microsoft.Xna.Framework.Game game)
     {
         _device = game.GraphicsDevice;
+        _game = game;
 
         ImGui.SetCurrentContext(ImGui.CreateContext());
         ImGui.StyleColorsDark();
@@ -128,8 +130,23 @@ public sealed class ImGuiRenderer : IDisposable
         ImGui.GetIO().AddInputCharacter(args.Character);
     }
 
+    /// <summary>
+    /// Feeds ImGui the current input state.
+    ///
+    /// <see cref="Keyboard"/> and <see cref="Mouse"/> report the desktop's global state, not this
+    /// window's, so an unfocused game would otherwise react to whatever the user is typing
+    /// elsewhere. When the window is not focused we report everything released rather than simply
+    /// skipping the update — skipping would leave any key held at the moment focus was lost stuck
+    /// down inside ImGui until it happened to be pressed again.
+    /// </summary>
     private void UpdateInput(ImGuiIOPtr io)
     {
+        if (!_game.IsActive)
+        {
+            ReleaseAllInput(io);
+            return;
+        }
+
         MouseState mouse = Mouse.GetState();
         KeyboardState keyboard = Keyboard.GetState();
 
@@ -153,6 +170,28 @@ public sealed class ImGuiRenderer : IDisposable
         io.AddKeyEvent(ImGuiKey.ModShift, keyboard.IsKeyDown(Keys.LeftShift) || keyboard.IsKeyDown(Keys.RightShift));
         io.AddKeyEvent(ImGuiKey.ModAlt, keyboard.IsKeyDown(Keys.LeftAlt) || keyboard.IsKeyDown(Keys.RightAlt));
         io.AddKeyEvent(ImGuiKey.ModSuper, keyboard.IsKeyDown(Keys.LeftWindows) || keyboard.IsKeyDown(Keys.RightWindows));
+    }
+
+    private void ReleaseAllInput(ImGuiIOPtr io)
+    {
+        // ImGui's convention for "the cursor is not over this window at all".
+        io.AddMousePosEvent(float.MinValue, float.MinValue);
+
+        for (int button = 0; button < 5; button++)
+            io.AddMouseButtonEvent(button, false);
+
+        foreach ((Keys _, ImGuiKey imKey) in KeyMap)
+            io.AddKeyEvent(imKey, false);
+
+        io.AddKeyEvent(ImGuiKey.ModCtrl, false);
+        io.AddKeyEvent(ImGuiKey.ModShift, false);
+        io.AddKeyEvent(ImGuiKey.ModAlt, false);
+        io.AddKeyEvent(ImGuiKey.ModSuper, false);
+
+        // Keep the wheel baseline current so refocusing does not deliver one huge scroll delta.
+        MouseState mouse = Mouse.GetState();
+        _scrollWheelValue = mouse.ScrollWheelValue;
+        _horizontalScrollWheelValue = mouse.HorizontalScrollWheelValue;
     }
 
     private void RenderDrawData(ImDrawDataPtr drawData)

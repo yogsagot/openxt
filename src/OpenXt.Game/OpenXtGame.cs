@@ -98,7 +98,10 @@ public sealed class OpenXtGame : Microsoft.Xna.Framework.Game
 
     protected override void Update(GameTime gameTime)
     {
-        if (Keyboard.GetState().IsKeyDown(Keys.Escape))
+        // Only act on input when this window has focus. MonoGame's Keyboard/Mouse report the
+        // desktop's global state, so without this the game quits on an Escape pressed in another
+        // application and flies itself on someone else's arrow keys.
+        if (IsActive && Keyboard.GetState().IsKeyDown(Keys.Escape))
             Exit();
 
         ReadFlightInput();
@@ -123,7 +126,9 @@ public sealed class OpenXtGame : Microsoft.Xna.Framework.Game
     {
         ref FlightControl control = ref _player.Get<FlightControl>();
 
-        if (ImGuiRenderer.WantsKeyboard)
+        // Losing focus releases the controls rather than freezing them, so a key held as the
+        // player alt-tabs away does not leave the ship thrusting or spinning indefinitely.
+        if (!IsActive || ImGuiRenderer.WantsKeyboard)
         {
             control = default;
             return;
@@ -166,7 +171,7 @@ public sealed class OpenXtGame : Microsoft.Xna.Framework.Game
         _shapes.End(view, projection);
 
         _imgui.BeginLayout(gameTime);
-        _overlay.Draw(_universe, _clock, _player, _assets, _catalog);
+        _overlay.Draw(_universe, _clock, _player, _assets, _catalog, IsActive);
         _imgui.EndLayout();
 
         base.Draw(gameTime);
