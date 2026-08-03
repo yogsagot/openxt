@@ -6,31 +6,37 @@ namespace OpenXt.Sim.Data;
 /// <summary>
 /// Data-driven ship stats. Adding a ship is a data change, never a code change —
 /// nothing in the sim may hardcode these values.
+///
+/// The properties are <c>set</c>, not <c>init</c>, and that is load-bearing: System.Text.Json's
+/// source generator constructs a type with init-only properties without running its constructor,
+/// which silently drops every property initializer below. A ship added by a mod that omits
+/// <c>hullRadius</c> would get 0 instead of 12, and an omitted <c>xbtfBodyId</c> would get 0 —
+/// body 0 — instead of -1, "no model". Defaults only survive on settable properties.
 /// </summary>
 public sealed record ShipDefinition
 {
-    public required string Id { get; init; }
-    public required string Name { get; init; }
+    public required string Id { get; set; }
+    public required string Name { get; set; }
 
     /// <summary>Kilograms.</summary>
-    public float Mass { get; init; } = 10_000f;
+    public float Mass { get; set; } = 10_000f;
 
     /// <summary>Main engine force, newtons.</summary>
-    public float MainThrust { get; init; } = 250_000f;
+    public float MainThrust { get; set; } = 250_000f;
 
     /// <summary>Manoeuvring thruster force for strafe/lift, newtons.</summary>
-    public float ManeuverThrust { get; init; } = 60_000f;
+    public float ManeuverThrust { get; set; } = 60_000f;
 
     /// <summary>Peak angular acceleration, radians per second squared (pitch, yaw, roll).</summary>
-    public float PitchRate { get; init; } = 1.2f;
-    public float YawRate { get; init; } = 1.0f;
-    public float RollRate { get; init; } = 2.0f;
+    public float PitchRate { get; set; } = 1.2f;
+    public float YawRate { get; set; } = 1.0f;
+    public float RollRate { get; set; } = 2.0f;
 
     /// <summary>Speed the flight computer holds when assist is on, metres per second.</summary>
-    public float CruiseSpeed { get; init; } = 130f;
+    public float CruiseSpeed { get; set; } = 130f;
 
     /// <summary>Collision sphere radius, metres.</summary>
-    public float HullRadius { get; init; } = 12f;
+    public float HullRadius { get; set; } = 12f;
 
     /// <summary>
     /// Body number in the original XBTF archive, resolving to a mesh in the converted asset cache.
@@ -40,15 +46,15 @@ public sealed record ShipDefinition
     /// simulation must never read them — they exist only for the rendering layer to resolve a mesh
     /// and a display name. Nothing here affects flight behaviour.
     /// </summary>
-    public int XbtfBodyId { get; init; } = -1;
+    public int XbtfBodyId { get; set; } = -1;
 
     /// <summary>Text id in the archive's language tables; the description is conventionally id + 1.</summary>
-    public int XbtfTextId { get; init; } = -1;
+    public int XbtfTextId { get; set; } = -1;
 }
 
 public sealed record ShipCatalogFile
 {
-    public required IReadOnlyList<ShipDefinition> Ships { get; init; }
+    public required IReadOnlyList<ShipDefinition> Ships { get; set; }
 }
 
 /// <summary>Source-generated JSON context — no reflection-based serialization anywhere in the sim.</summary>
@@ -58,6 +64,7 @@ public sealed record ShipCatalogFile
     ReadCommentHandling = JsonCommentHandling.Skip,
     AllowTrailingCommas = true)]
 [JsonSerializable(typeof(ShipCatalogFile))]
+[JsonSerializable(typeof(GameRuleset))]
 public partial class SimJsonContext : JsonSerializerContext;
 
 /// <summary>Immutable, index-addressable ship table loaded once at startup.</summary>
@@ -82,6 +89,15 @@ public sealed class ShipCatalog
         _byId.TryGetValue(id, out int index)
             ? index
             : throw new KeyNotFoundException($"No ship definition with id '{id}'.");
+
+    /// <summary>
+    /// Non-throwing lookup. Ship ids now come from mod-authored content, so "this package names a
+    /// ship nobody defines" is an ordinary data mistake to report, not an exception to propagate.
+    /// </summary>
+    public bool TryIndexOf(string id, out int index) => _byId.TryGetValue(id, out index);
+
+    /// <summary>Builds a catalog from definitions already in memory — merged content, or a test.</summary>
+    public static ShipCatalog Create(IReadOnlyList<ShipDefinition> definitions) => new([.. definitions]);
 
     public static ShipCatalog Load(Stream json)
     {

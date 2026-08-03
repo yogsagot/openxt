@@ -1,0 +1,24 @@
+{
+  // A mod is a package like any other: a manifest, some content, optionally an assembly.
+  "id": "openxt.sample",
+  "name": "Sample Mod",
+  "version": "0.1.0",
+  "kind": "mod",
+
+  // The contract this was built against. The engine refuses a package from the future rather than
+  // half-loading it.
+  "apiVersion": 1,
+
+  "license": "MIT",
+  "authors": ["OpenXT"],
+  "description": "Worked example: layered ship data, a simulation system, and a debug panel.",
+
+  // Written for X: Beyond the Frontier. Running --game xtension skips this package and says why,
+  // rather than loading it into a game it was not written for.
+  "requires": [
+    { "id": "xbtf", "version": "0.1" }
+  ],
+
+  // Code is opt-in and declared. It runs with the full rights of the process — see docs/modding.md.
+  "assembly": "OpenXt.SampleMod.dll"
+}

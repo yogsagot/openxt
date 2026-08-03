@@ -1,0 +1,31 @@
+{
+  // What makes this game this game. The engine reads it; nothing here is compiled in.
+  //
+  // A mod layers over this file like any other content, so a total conversion can move the start,
+  // change the ship the player wakes up in, or point at a different asset cache without forking
+  // the engine.
+  "id": "xbtf",
+  "title": "X: Beyond the Frontier",
+
+  // Which converted-asset cache to open, produced by:
+  //   dotnet run --project tools/OpenXt.AssetImport -- import --game xbtf
+  // The simulation never reads this; only the renderer does.
+  "assetKey": "xbtf",
+
+  "startSector": "Argon Prime",
+  "playerShip": "argon_elite",
+
+  // Placeholder scenery: something to look at and something for the broadphase to chew on. It used
+  // to be a loop in OpenXtGame; it is data now because that is the rule, and because X-Tension
+  // wants a different one.
+  "traffic": [
+    { "ship": "teladi_falcon",    "x": -460, "y":  75.7, "z": 460, "yaw": 0.4 },
+    { "ship": "argon_discoverer", "x": -320, "y":  81.8, "z": 520, "yaw": 0.8 },
+    { "ship": "argon_lifter",     "x": -180, "y":  12.7, "z": 580, "yaw": 1.2 },
+    { "ship": "teladi_falcon",    "x":  -40, "y": -68.1, "z": 640, "yaw": 1.6 },
+    { "ship": "argon_discoverer", "x":  100, "y": -86.3, "z": 700, "yaw": 2.0 },
+    { "ship": "argon_lifter",     "x":  240, "y": -25.1, "z": 760, "yaw": 2.4 },
+    { "ship": "teladi_falcon",    "x":  380, "y":  59.1, "z": 820, "yaw": 2.8 },
+    { "ship": "argon_discoverer", "x":  520, "y":  89.0, "z": 880, "yaw": 3.2 }
+  ]
+}

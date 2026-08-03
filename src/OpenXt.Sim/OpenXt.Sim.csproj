@@ -16,4 +16,12 @@
         <PackageReference Include="BepuPhysics"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <!--
+          The plugin contract and package loader. Dependency-free and graphics-free, so referencing
+          it costs the headless property nothing: a sim-only mod loads in a console host.
+        -->
+        <ProjectReference Include="..\OpenXt.Modding\OpenXt.Modding.csproj"/>
+    </ItemGroup>
+
 </Project>

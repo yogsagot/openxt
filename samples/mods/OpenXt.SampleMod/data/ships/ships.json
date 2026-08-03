@@ -1,0 +1,30 @@
+{
+  // This file does not replace the game's ship list — it layers over it.
+  //
+  // Entries merge by id, so the first block below changes two numbers on a ship that already
+  // exists and leaves the rest of its definition alone, and the second adds a ship nobody else
+  // defines. Anything omitted keeps its default (see ShipDefinition), which is why the courier
+  // only has to state what makes it a courier.
+  //
+  // Two other operations exist: "$remove": true deletes an entry, and "$replace": true swaps one
+  // wholesale instead of patching it field by field.
+  "ships": [
+    {
+      "id": "argon_elite",
+      "cruiseSpeed": 168,
+      "mainThrust": 420000
+    },
+    {
+      "id": "sample_courier",
+      "name": "Sample Courier",
+      "mass": 6000,
+      "mainThrust": 300000,
+      "cruiseSpeed": 190,
+      "hullRadius": 14,
+
+      // Borrows the Discoverer's hull so it has something to draw when an asset cache is present.
+      // A real mod would ship its own converted mesh once the pipeline accepts one.
+      "xbtfBodyId": 19
+    }
+  ]
+}

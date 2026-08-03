@@ -1,0 +1,13 @@
+{
+  "id": "xtension",
+  "name": "X-Tension",
+  "version": "0.1.0",
+  "kind": "game",
+  "apiVersion": 1,
+  "license": "MIT",
+  "authors": ["OpenXT"],
+  "description": "The 1999 expansion, running on the same engine as xbtf. It shares the ship roster and differs in its ruleset; its own archive has not been decoded far enough to say how its art ids line up, so it inherits them unchanged for now.",
+  "requires": [
+    { "id": "openxt.ships-core", "version": "0.1" }
+  ]
+}

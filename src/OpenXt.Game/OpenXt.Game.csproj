@@ -30,11 +30,23 @@
           reaches into the player's installation or links against Assimp.
         -->
         <ProjectReference Include="..\OpenXt.Assets\OpenXt.Assets.csproj"/>
+        <!-- The plugin contract, so this layer can offer IGamePlugin and read the package list. -->
+        <ProjectReference Include="..\OpenXt.Modding\OpenXt.Modding.csproj"/>
     </ItemGroup>
 
-    <!-- Game data lives at the repo root and is content, not code. -->
+    <!--
+      Packages, not game data: this project ships no content of its own. games/ holds the game
+      packages (one is selected at startup), mods/ the bundled mods and shared libraries. Both are
+      copied beside the executable, which is where ModPaths looks.
+
+      Only manifests and data are copied — a package's compiled assembly is placed by that
+      package's own build, never picked up out of the source tree.
+    -->
     <ItemGroup>
-        <None Include="..\..\data\**\*.json" LinkBase="data" CopyToOutputDirectory="PreserveNewest"/>
+        <None Include="..\..\games\**\*.json" LinkBase="games" CopyToOutputDirectory="PreserveNewest"/>
+        <None Include="..\..\mods\**\*.json"
+              Exclude="..\..\mods\**\bin\**;..\..\mods\**\obj\**"
+              LinkBase="mods" CopyToOutputDirectory="PreserveNewest"/>
     </ItemGroup>
 
 </Project>

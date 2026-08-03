@@ -1,0 +1,29 @@
+{
+  // X-Tension is the same simulation as xbtf with different rules and a different start — which is
+  // exactly the difference this file exists to hold.
+  //
+  // Honest state of this package: the ship roster is inherited from openxt.ships-core unchanged.
+  // X-Tension ships its own archive, so its body and text ids have not been verified against it —
+  // run `openxt-import meshinfo --game xtension` and, where they differ, add a
+  // data/ships/ships.json here that patches the ids by ship id. That file does not exist yet
+  // because inventing its contents would be worse than not having it.
+  "id": "xtension",
+  "title": "X-Tension",
+
+  // Its own converted-asset cache:
+  //   dotnet run --project tools/OpenXt.AssetImport -- import --game xtension
+  // With no cache the game still runs, on debug shapes.
+  "assetKey": "xtension",
+
+  // Placeholder start, same standing as xbtf's: the original's opening is scripted and the scene
+  // files are not imported yet.
+  "startSector": "Home of Light",
+  "playerShip": "argon_discoverer",
+
+  "traffic": [
+    { "ship": "argon_lifter",     "x": -520, "y":  40, "z":  520, "yaw": 0.3 },
+    { "ship": "teladi_falcon",    "x": -260, "y": -55, "z":  680, "yaw": 1.1 },
+    { "ship": "argon_elite",      "x":   90, "y":  20, "z":  760, "yaw": 2.2 },
+    { "ship": "argon_discoverer", "x":  420, "y": -30, "z":  900, "yaw": 2.9 }
+  ]
+}

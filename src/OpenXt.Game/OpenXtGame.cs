@@ -4,42 +4,54 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using OpenXt.Game.Assets;
 using OpenXt.Game.Debug;
+using OpenXt.Game.Modding;
 using OpenXt.Game.Rendering;
+using OpenXt.Modding;
 using OpenXt.Sim;
 using OpenXt.Sim.Components;
-using OpenXt.Sim.Data;
+using OpenXt.Sim.Modding;
 
 // Inside this project, unqualified Vector3/Quaternion/Matrix are MonoGame's. Simulation vectors are
 // System.Numerics and stay explicitly named — the conversion happens only at the render boundary.
 using SimVector3 = System.Numerics.Vector3;
-using SimQuaternion = System.Numerics.Quaternion;
 
 namespace OpenXt.Game;
 
 /// <summary>
 /// The MonoGame entry point. It owns the window, the graphics device and the frame loop, and
 /// nothing else — all world state lives in <see cref="Universe"/>, which knows nothing about it.
+///
+/// It owns no content either: the world it draws was built from the loaded packages before this
+/// type existed, and which game that is came from a package too.
 /// </summary>
 public sealed class OpenXtGame : Microsoft.Xna.Framework.Game
 {
     private readonly GraphicsDeviceManager _graphics;
     private readonly FixedStepClock _clock = new(stepSeconds: 1f / 60f);
 
-    private Universe _universe = null!;
-    private Sector _sector = null!;
-    private ShipCatalog _catalog = null!;
+    private readonly ModHost _mods;
+    private readonly Universe _universe;
+    private readonly Sector _sector;
+    private readonly Entity _player;
+
     private EntitySet _renderable = null!;
-    private Entity _player;
 
     private DebugShapeRenderer _shapes = null!;
     private MeshRenderer _meshes = null!;
     private AssetCache _assets = null!;
     private ImGuiRenderer _imgui = null!;
     private DebugOverlay _overlay = null!;
+    private GameContext _context = null!;
+    private GameRegistry _plugins = null!;
     private Camera _camera = new();
 
-    public OpenXtGame()
+    public OpenXtGame(ModHost mods, SimWorld world)
     {
+        _mods = mods;
+        _universe = world.Universe;
+        _sector = world.StartSector;
+        _player = world.Player;
+
         _graphics = new GraphicsDeviceManager(this)
         {
             PreferredBackBufferWidth = 1600,
@@ -52,30 +64,11 @@ public sealed class OpenXtGame : Microsoft.Xna.Framework.Game
         IsFixedTimeStep = false;
         IsMouseVisible = true;
         Window.AllowUserResizing = true;
-        Window.Title = "OpenXT";
+        Window.Title = $"OpenXT — {_universe.Rules.DisplayTitle}";
     }
 
     protected override void Initialize()
     {
-        string catalogPath = Path.Combine(AppContext.BaseDirectory, "data", "ships", "ships.json");
-        _catalog = ShipCatalog.LoadFile(catalogPath);
-
-        _universe = new Universe(_catalog);
-        _sector = _universe.CreateSector("Argon Prime");
-
-        _player = _sector.SpawnShip("argon_elite", SimVector3.Zero, SimQuaternion.Identity);
-        _player.Set<PlayerControlled>();
-
-        // Placeholder traffic, so there is something to look at and something for the broadphase to chew on.
-        string[] traffic = ["argon_lifter", "teladi_falcon", "argon_discoverer"];
-        for (int i = 1; i <= 8; i++)
-        {
-            _sector.SpawnShip(
-                traffic[i % traffic.Length],
-                new SimVector3(i * 140f - 600f, MathF.Sin(i) * 90f, 400f + i * 60f),
-                SimQuaternion.CreateFromYawPitchRoll(i * 0.4f, 0f, 0f));
-        }
-
         // Built once. Rebuilding an EntitySet per frame would allocate and leak subscriptions.
         _renderable = _sector.World.GetEntities().With<Pose>().With<Collider>().AsSet();
 
@@ -89,11 +82,31 @@ public sealed class OpenXtGame : Microsoft.Xna.Framework.Game
         _imgui = new ImGuiRenderer(this);
         _overlay = new DebugOverlay();
 
-        // Converted from the player's own installation by `openxt-import import`. Absent is a
-        // perfectly normal state: the game falls back to debug shapes and says why.
-        _assets = new AssetCache(GraphicsDevice, "xbtf");
+        // Converted from the player's own installation by `openxt-import import`. Which cache to
+        // open is the running game's business, not the engine's — hence the ruleset, not a literal.
+        // Absent is a perfectly normal state: the game falls back to debug shapes and says why.
+        _assets = new AssetCache(GraphicsDevice, _universe.Rules.AssetKey);
         if (_assets.Problem is { } problem)
             Console.Error.WriteLine($"assets: {problem}");
+
+        _context = new GameContext
+        {
+            GraphicsDevice = GraphicsDevice,
+            Host = this,
+            Mods = _mods,
+            Universe = _universe,
+            Assets = _assets,
+            Sector = _sector,
+            Player = _player,
+        };
+
+        // Plugins configure last: the device, the renderers and the asset cache all exist, so a
+        // package may create GPU resources in ConfigureGame.
+        _plugins = GameRegistry.Configure(_context);
+
+        // Says on the console what the F1 overlay shows in full. Without it, "did my plugin's
+        // ConfigureGame actually run" is only answerable by looking at the window.
+        Console.WriteLine($"mods: {_plugins.HookCount} frame hook(s) from {_mods.Plugins.Count} plugin(s)");
     }
 
     protected override void Update(GameTime gameTime)
@@ -103,6 +116,8 @@ public sealed class OpenXtGame : Microsoft.Xna.Framework.Game
         // application and flies itself on someone else's arrow keys.
         if (IsActive && Keyboard.GetState().IsKeyDown(Keys.Escape))
             Exit();
+
+        _context.IsFocused = IsActive;
 
         ReadFlightInput();
 
@@ -114,6 +129,9 @@ public sealed class OpenXtGame : Microsoft.Xna.Framework.Game
         _assets.Update();
 
         UpdateCamera();
+
+        // Frame-rate work only: anything that changes the world belongs in a sector system.
+        _plugins.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
 
         base.Update(gameTime);
     }
@@ -168,10 +186,11 @@ public sealed class OpenXtGame : Microsoft.Xna.Framework.Game
         Matrix projection = _camera.Projection(GraphicsDevice.Viewport.AspectRatio);
 
         DrawSector(view, projection);
+        _plugins.Draw(new RenderView(view, projection));
         _shapes.End(view, projection);
 
         _imgui.BeginLayout(gameTime);
-        _overlay.Draw(_universe, _clock, _player, _assets, _catalog, IsActive);
+        _overlay.Draw(_context, _plugins, _clock);
         _imgui.EndLayout();
 
         base.Draw(gameTime);
@@ -199,7 +218,7 @@ public sealed class OpenXtGame : Microsoft.Xna.Framework.Game
             Quaternion orientation = Camera.ToXna(pose.Orientation);
             bool isPlayer = entity.Has<PlayerControlled>();
 
-            GpuMesh? mesh = _assets.Request(_catalog[entity.Get<ShipRef>().DefinitionIndex].XbtfBodyId);
+            GpuMesh? mesh = _assets.Request(_universe.Ships[entity.Get<ShipRef>().DefinitionIndex].XbtfBodyId);
 
             if (mesh is not null)
             {

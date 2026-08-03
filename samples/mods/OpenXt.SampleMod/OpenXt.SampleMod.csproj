@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <!--
+      A worked example of a third-party mod, and the template to copy.
+
+      It references the engine the way an outside author would: OpenXt.Modding for the contract,
+      OpenXt.Sim for simulation behaviour, OpenXt.Game for the overlay panel. All three are
+      Private=false — the engine assemblies must NOT be copied next to the mod. At runtime the
+      loader resolves them from the host's default load context, and a mod shipping its own copy of
+      OpenXt.Sim.dll would produce a second, incompatible set of component types.
+    -->
+
+    <PropertyGroup>
+        <RootNamespace>OpenXt.SampleMod</RootNamespace>
+        <AssemblyName>OpenXt.SampleMod</AssemblyName>
+        <EnableDynamicLoading>true</EnableDynamicLoading>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\src\OpenXt.Modding\OpenXt.Modding.csproj" Private="false"/>
+        <ProjectReference Include="..\..\..\src\OpenXt.Sim\OpenXt.Sim.csproj" Private="false"/>
+        <ProjectReference Include="..\..\..\src\OpenXt.Game\OpenXt.Game.csproj" Private="false"/>
+    </ItemGroup>
+
+    <!--
+      Installs itself where a player would put it: mods/<id> beside the game's executable.
+
+      The path is written out rather than taken from a project reference because the dependency
+      runs the other way — the game must not reference a mod. Either build order works: the game's
+      build never touches this directory.
+    -->
+    <PropertyGroup>
+        <SampleModInstallDir>$(MSBuildThisFileDirectory)..\..\..\src\OpenXt.Game\bin\$(Configuration)\$(TargetFramework)\mods\openxt.sample\</SampleModInstallDir>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <SampleModContent Include="data\**\*"/>
+    </ItemGroup>
+
+    <Target Name="InstallSampleMod" AfterTargets="Build">
+        <Copy SourceFiles="$(TargetPath);mod.json" DestinationFolder="$(SampleModInstallDir)" SkipUnchangedFiles="true"/>
+        <Copy SourceFiles="$(TargetDir)$(AssemblyName).deps.json" DestinationFolder="$(SampleModInstallDir)"
+              SkipUnchangedFiles="true" Condition="Exists('$(TargetDir)$(AssemblyName).deps.json')"/>
+        <!-- %(RecursiveDir) starts after data\, so the destination has to put it back. -->
+        <Copy SourceFiles="@(SampleModContent)"
+              DestinationFiles="@(SampleModContent->'$(SampleModInstallDir)data\%(RecursiveDir)%(Filename)%(Extension)')"
+              SkipUnchangedFiles="true"/>
+    </Target>
+
+</Project>

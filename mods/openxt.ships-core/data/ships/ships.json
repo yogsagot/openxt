@@ -1,5 +1,9 @@
 {
-  // Ships of X: Beyond the Frontier.
+  // The ship roster, shared by every game on this engine.
+  //
+  // This file is one layer of a stack: a game package or a mod can add ships, retune these, or
+  // remove them by shipping data/ships/ships.json of its own — entries merge by id, so nobody has
+  // to copy the roster to change one number. See docs/modding.md.
   //
   // Names, descriptions and models come from the player's own installation via
   // `openxt-import import`; xbtfBodyId and xbtfTextId are the links into that converted cache.

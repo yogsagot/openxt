@@ -90,6 +90,42 @@ public sealed class OxMeshTests
         Assert.False((current with { MeshVersion = 999 }).IsCurrent);
     }
 
+    /// <summary>
+    /// Guards a trap that is invisible until it bites: System.Text.Json's source generator builds a
+    /// type with init-only properties without running its constructor, so every property
+    /// initializer is silently dropped. A manifest that predates a field — or one a user edited —
+    /// must still come back with the defaults the type promises, not with nulls and zeros.
+    /// </summary>
+    [Fact]
+    public void ManifestFieldsAbsentFromTheFileKeepTheirDefaults()
+    {
+        string path = Path.Combine(Path.GetTempPath(), $"openxt-manifest-{Guid.NewGuid():N}.json");
+
+        try
+        {
+            File.WriteAllText(path,
+                """
+                {
+                  "game": "xbtf",
+                  "sourceRoot": "/somewhere",
+                  "catSha256": "a",
+                  "datSha256": "b"
+                }
+                """);
+
+            CacheManifest manifest = CacheManifest.ReadFile(path)!;
+
+            Assert.Equal(CacheManifest.CurrentImporterVersion, manifest.ImporterVersion);
+            Assert.Equal(OxMesh.CurrentVersion, manifest.MeshVersion);
+            Assert.Empty(manifest.MissingTextures);
+            Assert.True(manifest.IsCurrent);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
     [Fact]
     public void CachePathsStayUnderTheConfiguredRoot()
     {

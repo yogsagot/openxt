@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <!--
+      The mod/plugin contract and loader.
+
+      Deliberately dependency-free, for the same reason OpenXt.Assets is: it sits underneath both
+      layers. The sim references it to pick up ISimPlugin, the game layer references it to pick up
+      IGamePlugin, and neither drags the other in. Nothing here knows about ECS, physics or
+      graphics — this project only understands packages, versions, files and JSON.
+
+      A mod author references this assembly plus whichever layer they want to extend.
+    -->
+
+    <PropertyGroup>
+        <RootNamespace>OpenXt.Modding</RootNamespace>
+        <AssemblyName>OpenXt.Modding</AssemblyName>
+    </PropertyGroup>
+
+</Project>

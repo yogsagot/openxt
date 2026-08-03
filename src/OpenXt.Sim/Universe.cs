@@ -1,4 +1,5 @@
 using OpenXt.Sim.Data;
+using OpenXt.Sim.Systems;
 
 namespace OpenXt.Sim;
 
@@ -6,6 +7,10 @@ namespace OpenXt.Sim;
 /// Root of all persistent world state and the save/load anchor. Runs headless: this type and
 /// everything it owns must stay usable with no graphics device and no window, which is what
 /// makes the simulation testable.
+///
+/// It holds what the loaded packages produced — the merged ship catalog, the running game's
+/// ruleset, and the ordered system plan every sector is built from — so nothing below this line
+/// needs to know that mods exist.
 /// </summary>
 public sealed class Universe : IDisposable
 {
@@ -16,13 +21,24 @@ public sealed class Universe : IDisposable
 
     public ShipCatalog Ships { get; }
 
+    /// <summary>The running game's rules and start state.</summary>
+    public GameRuleset Rules { get; }
+
+    /// <summary>The systems every sector runs, in their settled order.</summary>
+    public SectorSystemPlan Systems { get; }
+
     public IReadOnlyList<Sector> Sectors => _sectors;
 
-    public Universe(ShipCatalog ships) => Ships = ships;
+    public Universe(ShipCatalog ships, GameRuleset rules, SectorSystemPlan systems)
+    {
+        Ships = ships;
+        Rules = rules;
+        Systems = systems;
+    }
 
     public Sector CreateSector(string name)
     {
-        Sector sector = new(name, Ships);
+        Sector sector = new(name, Ships, Systems);
         _sectors.Add(sector);
         return sector;
     }

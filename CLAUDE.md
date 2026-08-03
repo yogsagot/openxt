@@ -3,8 +3,13 @@
 A code-first recreation of a classic 3D space sim XBTF/X-Tension from EGOSOFT in C#.
 
 Current state: the skeleton is up and runs, and real ships now render. The fixed-step loop, the flight model, the Bepu
-broadphase, the ImGui debug overlay, the data-driven ship catalog and the XBTF/X-Tension asset pipeline all exist and
-build; there is no AI, no economy and no missions yet. Everything below is binding on new code.
+broadphase, the ImGui debug overlay, the data-driven ship catalog, the XBTF/X-Tension asset pipeline and the package
+(mod) system all exist and build; there is no AI, no economy and no missions yet. Everything below is binding on new
+code.
+
+**The engine ships no content of its own.** Both games are packages — `games/xbtf`, `games/xtension` — loaded through
+the same system third-party mods use. See [docs/modding.md](docs/modding.md) and "Packages" below before adding
+anything that looks like game data.
 
 ## Non-negotiable constraints
 
@@ -70,32 +75,83 @@ does not compile.
 
 ```
 openxt.slnx
+├── src/OpenXt.Modding          package format and loader: manifest, versions, dependency
+│                               resolution, layered content, JSON overlay, plugin ALC loading.
+│                               Dependency-free — no ECS, no graphics, so both layers can build
+│                               on it and neither leaks into the other
 ├── src/OpenXt.Sim              headless simulation — DefaultEcs + BepuPhysics, no MonoGame
 │   ├── Universe.cs             persistent world state, save/load root
 │   ├── Sector.cs               one simulated locale; owns its ECS world and broadphase
 │   ├── FixedStepClock.cs       fixed-timestep accumulator with a spiral-of-death guard
 │   ├── Components/             structs only, no behaviour
-│   ├── Systems/                FlightSystem; AI, Economy, Mission go here
+│   ├── Systems/                ISectorSystem + the staged pipeline; FlightSystem; AI, Economy,
+│   │                           Mission go here
+│   ├── Modding/                ISimPlugin, SimRegistry, CoreSimPlugin, SimBootstrap
 │   ├── Flight/FlightModel.cs   custom integrator — the feel lives here
 │   ├── Physics/                Bepu wrapper + narrow-phase / pose-integrator callbacks
-│   └── Data/                   ShipDefinition, ShipCatalog, source-generated JSON context
+│   └── Data/                   ShipDefinition, ShipCatalog, GameRuleset, ContentCatalogs,
+│                               source-generated JSON context
 ├── src/OpenXt.Assets           the converted-asset format: .oxmesh, cache paths, manifest
 │                               shared by the game (reads) and the importer (writes), so the
 │                               format cannot drift; no MonoGame, no Assimp
 ├── src/OpenXt.Game             window, graphics device, input, render loop
+│   ├── Program.cs              builds the package host and the world before any window exists
+│   ├── LaunchOptions.cs        --game, --mods, --disable, --no-plugins, --list-mods
 │   ├── OpenXtGame.cs           the only place the two layers meet
 │   ├── Assets/                 AssetCache (async load, main-thread GPU upload), GpuMesh
+│   ├── Modding/                IGamePlugin, GameContext, GameRegistry
 │   ├── Rendering/              Camera, MeshRenderer, DebugShapeRenderer, ImGuiRenderer
-│   └── Debug/DebugOverlay.cs   dev overlay, F1
+│   └── Debug/DebugOverlay.cs   dev overlay, F1 — sim window and package window
+├── games/xbtf, games/xtension  the two game packages: manifest + ruleset + content
+├── mods/openxt.ships-core      shared ship roster, a library package both games require
+├── samples/mods/…SampleMod     worked example of a third-party mod, and the template to copy
 ├── tools/OpenXt.XArchive       readers for EGOSOFT's .cat/.dat, PCK, body and text formats
 │                               format logic only — never any game data
 ├── tools/OpenXt.AssetImport    the openxt-import CLI; also the offline Assimp inspector
-├── tests/OpenXt.XArchive.Tests synthetic fixtures; install-gated tests skip when absent
-└── data/                       ship catalog and other authored content, copied to output
+├── tests/OpenXt.Modding.Tests  loader and headless-simulation tests; builds its packages in temp
+└── tests/OpenXt.XArchive.Tests synthetic fixtures; install-gated tests skip when absent
 ```
 
 Still to build: AI, Economy, Mission, scene-graph import (multi-part ships), spatial partitioning,
 save/load, and networking (optional, later — do not design around it yet).
+
+## Packages
+
+Everything the player can see is in a package, and there is one mechanism for all of them —
+`docs/modding.md` is the authoring guide and is worth reading before changing any of this.
+
+- **`kind: game`** — a game. Exactly one loads per run, chosen with `--game` (default `xbtf`).
+  XBTF and X-Tension differ by ruleset and content, never by a branch in the engine.
+- **`kind: mod`** — loads whenever its dependencies resolve. **`kind: library`** — loads only when
+  something requires it.
+- Search roots in order, later winning: `<exe>/games`, `<exe>/mods`, `<asset cache root>/mods`,
+  then any `--mods` path. A player-installed package overrides the bundled copy of the same id.
+- **Content layers.** `ModContent.Find` takes the last layer; `ModContent.Layers` returns all of
+  them and `JsonOverlay` merges them: objects merge, arrays are replaced unless their elements have
+  an `id`, in which case they merge by id (`$remove`, `$replace`). Adding a ship is a file, not a
+  code change — that rule now extends to third parties.
+- **Load order is deterministic** — topological, ties broken by ordinal id — because it decides the
+  order simulation systems run in, and the sim is fixed-step. Do not introduce ordering that depends
+  on hash iteration, filesystem order or registration timing.
+- **Nothing throws over a bad package.** Broken manifest, missing dependency, plugin that throws:
+  the package disables itself, the reason lands in `ModDiagnostics`, the game starts. This is a
+  hard rule — one stale third-party mod must never make the game unbootable.
+- **Plugins are trusted code.** .NET has no sandbox, so the protections are honesty and opt-out:
+  `assembly` is declared in the manifest, code packages are flagged in `--list-mods` and the
+  overlay, `--no-plugins` runs content-only and `--disable` skips packages by id. Do not add
+  anything that implies isolation we cannot deliver.
+- **The engine goes through its own door.** `FlightSystem` is registered by `CoreSimPlugin` through
+  the same `ISimRegistry` a mod uses. Keep it that way; a private path for engine systems is how the
+  public one rots.
+
+Extension points today: `ISimPlugin` (sector systems, staged `Intent` → `Movement` → *physics* →
+`PostPhysics` → `Late`) and `IGamePlugin` (frame systems, world renderers, overlay panels). New ones
+belong on those registries, not as new discovery mechanisms.
+
+One trap, documented in `ShipDefinition` and `ModManifest` and covered by a regression test:
+**JSON-bound records use `set`, never `init`.** System.Text.Json's source generator constructs
+init-only types without running their constructor, which silently drops every property initializer —
+an omitted `hullRadius` would become 0, and a manifest without `kind` would come back as `Game`.
 
 ## Original game assets
 
@@ -111,8 +167,8 @@ MonoGame decodes them directly) and language tables (`t/44*.txt` English, `t/49*
 Two things to know before touching the pipeline:
 
 - **The archives contain no ship statistics.** XBTF predates the `types/` tables of X2 and later; speed, cargo, shields
-  and prices are compiled into `X.exe`. Everything in `data/ships/ships.json` except `xbtfBodyId` and `xbtfTextId` is
-  hand-authored by us and tuned by feel. Do not present those numbers as extracted.
+  and prices are compiled into `X.exe`. Everything in `mods/openxt.ships-core/data/ships/ships.json` except
+  `xbtfBodyId` and `xbtfTextId` is hand-authored by us and tuned by feel. Do not present those numbers as extracted.
 - **Scale is an anchor, not a measurement.** `MeshConverter.DefaultMetresPerUnit` is 1/500, which makes the Argon M3
   48 m. Bodies are not authored at a common scale — per-object scale lives in the scene files, which are not imported
   yet — so `openxt-import import --scale N` exists to correct it without a rebuild.
@@ -123,8 +179,8 @@ Rules:
   needs a `GraphicsDevice`, it's in the wrong layer.
 - **Deterministic update loop.** Fixed timestep for simulation, decoupled from render. No `Random` without a seeded,
   per-system instance. No frame-rate-dependent physics.
-- **Data-driven content.** Ships, weapons, commodities, star systems come from JSON/data files, not C# literals. Adding
-  a ship should never require a code change.
+- **Data-driven content.** Ships, weapons, commodities, star systems come from JSON/data files in a package, not C#
+  literals. Adding a ship should never require a code change, and neither should adding a game.
 - **Custom flight model.** Bepu handles collision detection and spatial queries; the flight feel (thrust, drag/damping
   curves, assist modes, turret tracking) is ours and stays tunable from data.
 - **Spatial queries via octree/BVH**, not linear scans — a star system will hold thousands of entities.
@@ -143,11 +199,22 @@ Rules:
 
 ## Working on this project
 
-- Build everything: `dotnet build`.
+- Build everything: `dotnet build`. This also installs the sample mod into the game's output directory.
 - Run the game: `dotnet run --project src/OpenXt.Game`.
   Controls: `W/S` thrust, `A/D` strafe, `R/F` lift, arrows pitch/yaw, `Q/E` roll, `F1` overlay, `Esc` quit.
-- Run the tests: `dotnet test`. They use synthetic fixtures and pass with no game installed; the tests that need a real
-  installation report as skipped.
+- Choose a game and inspect packages:
+
+  ```
+  dotnet run --project src/OpenXt.Game -- --list-mods           # resolved package list + diagnostics
+  dotnet run --project src/OpenXt.Game -- --game xtension       # the other game
+  dotnet run --project src/OpenXt.Game -- --no-plugins          # content layers, no third-party code
+  dotnet run --project src/OpenXt.Game -- --mods /path/to/mods  # extra search root, for testing a package
+  ```
+
+  `--list-mods` is the first thing to run when a package does not behave: it prints the load order and the reason
+  anything was dropped, without opening a window.
+- Run the tests: `dotnet test`. They use synthetic fixtures and temp package trees and pass with no game installed; the
+  tests that need a real installation report as skipped.
 - Import the original assets (needs your own copy of the game):
 
   ```

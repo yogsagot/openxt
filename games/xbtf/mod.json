@@ -1,0 +1,13 @@
+{
+  "id": "xbtf",
+  "name": "X: Beyond the Frontier",
+  "version": "0.1.0",
+  "kind": "game",
+  "apiVersion": 1,
+  "license": "MIT",
+  "authors": ["OpenXT"],
+  "description": "The 1999 original. Its rules and start state are data; its art comes from the player's own installation via openxt-import, never from this repository.",
+  "requires": [
+    { "id": "openxt.ships-core", "version": "0.1" }
+  ]
+}

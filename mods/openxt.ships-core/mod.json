@@ -1,0 +1,10 @@
+{
+  "id": "openxt.ships-core",
+  "name": "Core Ship Roster",
+  "version": "0.1.0",
+  "kind": "library",
+  "apiVersion": 1,
+  "license": "MIT",
+  "authors": ["OpenXT"],
+  "description": "The ship roster shared by X: Beyond the Frontier and X-Tension. A library: it loads only because a game requires it, never on its own account. The stats are ours; see the file's own header."
+}

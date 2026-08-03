@@ -9,8 +9,11 @@ namespace OpenXt.Sim.Systems;
 /// <summary>
 /// Runs the flight model over every ship, then mirrors the resulting poses into the physics
 /// broadphase. Hot path: no LINQ, no closures, no boxing.
+///
+/// Registered like any other system, by <see cref="Modding.CoreSimPlugin"/> — the engine goes
+/// through the same door mods do, so the extension point cannot quietly stop working.
 /// </summary>
-public sealed class FlightSystem : IDisposable
+public sealed class FlightSystem : ISectorSystem, IDisposable
 {
     private readonly EntitySet _ships;
     private readonly ShipCatalog _catalog;
@@ -28,7 +31,7 @@ public sealed class FlightSystem : IDisposable
             .AsSet();
     }
 
-    public void Update(float dt)
+    public void Update(Sector sector, float dt)
     {
         ReadOnlySpan<Entity> entities = _ships.GetEntities();
         for (int i = 0; i < entities.Length; i++)
