@@ -19,6 +19,11 @@
 
         <!-- Offline asset import only, never referenced by the game or sim. AssimpNet = MIT. -->
         <PackageVersion Include="AssimpNet" Version="4.1.0"/>
+
+        <!-- Test-only. xunit = Apache-2.0, its runner and the SDK = MIT. Never shipped. -->
+        <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.12.0"/>
+        <PackageVersion Include="xunit" Version="2.9.2"/>
+        <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2"/>
     </ItemGroup>
 
 </Project>

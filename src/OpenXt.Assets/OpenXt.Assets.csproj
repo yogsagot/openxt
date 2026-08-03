@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <!--
+      The converted-asset format, shared by the offline importer (which writes it) and the game
+      (which reads it). It lives here rather than in either one so the two can never drift.
+
+      Deliberately dependency-free: no MonoGame, no Assimp. The importer must not drag graphics
+      types in, and the game must not drag import tooling in. Both just agree on these bytes.
+    -->
+
+    <PropertyGroup>
+        <RootNamespace>OpenXt.Assets</RootNamespace>
+        <AssemblyName>OpenXt.Assets</AssemblyName>
+    </PropertyGroup>
+
+</Project>

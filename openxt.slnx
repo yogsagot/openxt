@@ -1,9 +1,14 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/OpenXt.Assets/OpenXt.Assets.csproj" />
     <Project Path="src/OpenXt.Game/OpenXt.Game.csproj" />
     <Project Path="src/OpenXt.Sim/OpenXt.Sim.csproj" />
   </Folder>
   <Folder Name="/tools/">
     <Project Path="tools/OpenXt.AssetImport/OpenXt.AssetImport.csproj" />
+    <Project Path="tools/OpenXt.XArchive/OpenXt.XArchive.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/OpenXt.XArchive.Tests/OpenXt.XArchive.Tests.csproj" />
   </Folder>
 </Solution>

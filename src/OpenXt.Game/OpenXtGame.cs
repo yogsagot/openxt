@@ -2,6 +2,7 @@ using DefaultEcs;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using OpenXt.Game.Assets;
 using OpenXt.Game.Debug;
 using OpenXt.Game.Rendering;
 using OpenXt.Sim;
@@ -26,10 +27,13 @@ public sealed class OpenXtGame : Microsoft.Xna.Framework.Game
 
     private Universe _universe = null!;
     private Sector _sector = null!;
+    private ShipCatalog _catalog = null!;
     private EntitySet _renderable = null!;
     private Entity _player;
 
     private DebugShapeRenderer _shapes = null!;
+    private MeshRenderer _meshes = null!;
+    private AssetCache _assets = null!;
     private ImGuiRenderer _imgui = null!;
     private DebugOverlay _overlay = null!;
     private Camera _camera = new();
@@ -54,19 +58,20 @@ public sealed class OpenXtGame : Microsoft.Xna.Framework.Game
     protected override void Initialize()
     {
         string catalogPath = Path.Combine(AppContext.BaseDirectory, "data", "ships", "ships.json");
-        ShipCatalog catalog = ShipCatalog.LoadFile(catalogPath);
+        _catalog = ShipCatalog.LoadFile(catalogPath);
 
-        _universe = new Universe(catalog);
+        _universe = new Universe(_catalog);
         _sector = _universe.CreateSector("Argon Prime");
 
-        _player = _sector.SpawnShip("argon_discoverer", SimVector3.Zero, SimQuaternion.Identity);
+        _player = _sector.SpawnShip("argon_elite", SimVector3.Zero, SimQuaternion.Identity);
         _player.Set<PlayerControlled>();
 
         // Placeholder traffic, so there is something to look at and something for the broadphase to chew on.
+        string[] traffic = ["argon_lifter", "teladi_falcon", "argon_discoverer"];
         for (int i = 1; i <= 8; i++)
         {
             _sector.SpawnShip(
-                i % 2 == 0 ? "argon_mercury" : "teladi_vulture",
+                traffic[i % traffic.Length],
                 new SimVector3(i * 140f - 600f, MathF.Sin(i) * 90f, 400f + i * 60f),
                 SimQuaternion.CreateFromYawPitchRoll(i * 0.4f, 0f, 0f));
         }
@@ -80,8 +85,15 @@ public sealed class OpenXtGame : Microsoft.Xna.Framework.Game
     protected override void LoadContent()
     {
         _shapes = new DebugShapeRenderer(GraphicsDevice);
+        _meshes = new MeshRenderer(GraphicsDevice);
         _imgui = new ImGuiRenderer(this);
         _overlay = new DebugOverlay();
+
+        // Converted from the player's own installation by `openxt-import import`. Absent is a
+        // perfectly normal state: the game falls back to debug shapes and says why.
+        _assets = new AssetCache(GraphicsDevice, "xbtf");
+        if (_assets.Problem is { } problem)
+            Console.Error.WriteLine($"assets: {problem}");
     }
 
     protected override void Update(GameTime gameTime)
@@ -94,6 +106,9 @@ public sealed class OpenXtGame : Microsoft.Xna.Framework.Game
         int steps = _clock.Advance((float)gameTime.ElapsedGameTime.TotalSeconds);
         for (int i = 0; i < steps; i++)
             _universe.Step(_clock.Step);
+
+        // Drains finished background loads onto the GPU. Must be the main thread.
+        _assets.Update();
 
         UpdateCamera();
 
@@ -147,20 +162,26 @@ public sealed class OpenXtGame : Microsoft.Xna.Framework.Game
         Matrix view = _camera.View;
         Matrix projection = _camera.Projection(GraphicsDevice.Viewport.AspectRatio);
 
-        DrawSector();
+        DrawSector(view, projection);
         _shapes.End(view, projection);
 
         _imgui.BeginLayout(gameTime);
-        _overlay.Draw(_universe, _clock, _player);
+        _overlay.Draw(_universe, _clock, _player, _assets, _catalog);
         _imgui.EndLayout();
 
         base.Draw(gameTime);
     }
 
-    private void DrawSector()
+    /// <summary>
+    /// Draws each ship as its imported mesh, falling back to a debug box while the mesh is still
+    /// loading or when there is no asset cache at all.
+    /// </summary>
+    private void DrawSector(Matrix view, Matrix projection)
     {
         _shapes.Begin();
         DrawReferenceGrid();
+
+        _meshes.Begin(view, projection);
 
         ReadOnlySpan<Entity> entities = _renderable.GetEntities();
         for (int i = 0; i < entities.Length; i++)
@@ -172,6 +193,14 @@ public sealed class OpenXtGame : Microsoft.Xna.Framework.Game
             Vector3 position = Camera.ToXna(pose.Position);
             Quaternion orientation = Camera.ToXna(pose.Orientation);
             bool isPlayer = entity.Has<PlayerControlled>();
+
+            GpuMesh? mesh = _assets.Request(_catalog[entity.Get<ShipRef>().DefinitionIndex].XbtfBodyId);
+
+            if (mesh is not null)
+            {
+                _meshes.Draw(mesh, Matrix.CreateFromQuaternion(orientation) * Matrix.CreateTranslation(position));
+                continue;
+            }
 
             _shapes.Box(position, orientation, collider.Radius, isPlayer ? Color.White : Color.SlateGray);
             _shapes.Axes(position, orientation, collider.Radius * 2.5f);
@@ -197,6 +226,8 @@ public sealed class OpenXtGame : Microsoft.Xna.Framework.Game
     protected override void UnloadContent()
     {
         _imgui.Dispose();
+        _assets.Dispose();
+        _meshes.Dispose();
         _shapes.Dispose();
         _renderable.Dispose();
         _universe.Dispose();

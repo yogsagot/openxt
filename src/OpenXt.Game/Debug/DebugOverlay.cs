@@ -1,7 +1,9 @@
 using DefaultEcs;
 using ImGuiNET;
+using OpenXt.Game.Assets;
 using OpenXt.Sim;
 using OpenXt.Sim.Components;
+using OpenXt.Sim.Data;
 
 namespace OpenXt.Game.Debug;
 
@@ -13,7 +15,8 @@ public sealed class DebugOverlay
 {
     private bool _visible = true;
 
-    public void Draw(Universe universe, FixedStepClock clock, Entity player)
+    public void Draw(
+        Universe universe, FixedStepClock clock, Entity player, AssetCache assets, ShipCatalog catalog)
     {
         if (ImGui.IsKeyPressed(ImGuiKey.F1, repeat: false))
             _visible = !_visible;
@@ -40,6 +43,25 @@ public sealed class DebugOverlay
             {
                 ImGui.Text($"{sector.Name}: {sector.EntityCount} entities, "
                            + $"{sector.Physics.Simulation.Bodies.ActiveSet.Count} active bodies");
+            }
+
+            ImGui.Separator();
+
+            ShipDefinition ship = catalog[player.Get<ShipRef>().DefinitionIndex];
+
+            // The archive's own name for the ship, when the asset cache is present; otherwise ours.
+            string displayName = assets.Text(ship.XbtfTextId) ?? ship.Name;
+            ImGui.Text($"Ship        {displayName}");
+
+            if (assets.Problem is { } problem)
+            {
+                ImGui.TextColored(new System.Numerics.Vector4(1f, 0.75f, 0.3f, 1f), "No asset cache");
+                ImGui.TextWrapped(problem);
+            }
+            else if (assets.Manifest is { } manifest)
+            {
+                ImGui.TextDisabled($"Assets      {manifest.Game}: {manifest.MeshCount} meshes, "
+                                   + $"{manifest.TextureCount} textures");
             }
 
             ImGui.Separator();

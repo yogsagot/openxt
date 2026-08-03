@@ -1,8 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <!--
-      Offline asset importer. Assimp is a build-time tool, not a shipping dependency: the game
+      Offline asset tooling. Assimp is a build-time tool, not a shipping dependency: the game
       loads pre-converted meshes, so neither OpenXt.Game nor OpenXt.Sim references this project.
+
+      It writes the cache format defined in src/OpenXt.Assets, which the game reads. That library
+      is the only thing the two sides share, so the format cannot drift between them.
     -->
 
     <PropertyGroup>
@@ -13,6 +16,11 @@
 
     <ItemGroup>
         <PackageReference Include="AssimpNet"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\OpenXt.XArchive\OpenXt.XArchive.csproj"/>
+        <ProjectReference Include="..\..\src\OpenXt.Assets\OpenXt.Assets.csproj"/>
     </ItemGroup>
 
 </Project>

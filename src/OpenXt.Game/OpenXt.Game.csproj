@@ -25,6 +25,11 @@
 
     <ItemGroup>
         <ProjectReference Include="..\OpenXt.Sim\OpenXt.Sim.csproj"/>
+        <!--
+          The converted-asset format only. NOT the importer: the game reads the cache, it never
+          reaches into the player's installation or links against Assimp.
+        -->
+        <ProjectReference Include="..\OpenXt.Assets\OpenXt.Assets.csproj"/>
     </ItemGroup>
 
     <!-- Game data lives at the repo root and is content, not code. -->

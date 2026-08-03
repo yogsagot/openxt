@@ -31,6 +31,19 @@ public sealed record ShipDefinition
 
     /// <summary>Collision sphere radius, metres.</summary>
     public float HullRadius { get; init; } = 12f;
+
+    /// <summary>
+    /// Body number in the original XBTF archive, resolving to a mesh in the converted asset cache.
+    /// -1 means "no model", which is normal: the game runs with debug shapes when no cache exists.
+    ///
+    /// This and <see cref="XbtfTextId"/> are plain ints so the simulation stays headless, but the
+    /// simulation must never read them — they exist only for the rendering layer to resolve a mesh
+    /// and a display name. Nothing here affects flight behaviour.
+    /// </summary>
+    public int XbtfBodyId { get; init; } = -1;
+
+    /// <summary>Text id in the archive's language tables; the description is conventionally id + 1.</summary>
+    public int XbtfTextId { get; init; } = -1;
 }
 
 public sealed record ShipCatalogFile

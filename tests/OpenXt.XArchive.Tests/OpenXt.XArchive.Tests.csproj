@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <!--
+      Tests for the archive readers and the converted-asset format.
+
+      These run against SYNTHETIC fixtures built in memory — no EGOSOFT bytes are committed here,
+      so CI needs no copy of the games. The one test that touches a real installation skips itself
+      when none is present.
+    -->
+
+    <PropertyGroup>
+        <RootNamespace>OpenXt.XArchive.Tests</RootNamespace>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.NET.Test.Sdk"/>
+        <PackageReference Include="xunit"/>
+        <PackageReference Include="xunit.runner.visualstudio"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\tools\OpenXt.XArchive\OpenXt.XArchive.csproj"/>
+        <ProjectReference Include="..\..\src\OpenXt.Assets\OpenXt.Assets.csproj"/>
+    </ItemGroup>
+
+</Project>

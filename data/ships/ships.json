@@ -1,8 +1,33 @@
 {
+  // Ships of X: Beyond the Frontier.
+  //
+  // Names, descriptions and models come from the player's own installation via
+  // `openxt-import import`; xbtfBodyId and xbtfTextId are the links into that converted cache.
+  // The flight numbers below are OURS — the archives carry no ship statistics at all, so these
+  // are hand-authored and tuned by feel, not extracted. Adding a ship is a data change.
+  //
+  // xbtfBodyId values were matched by body title ("Argon M3", "Argon Frachter", ...); run
+  // `openxt-import meshinfo` to list them alongside their sizes.
   "ships": [
     {
+      "id": "argon_elite",
+      "name": "Argon Elite",
+      "xbtfBodyId": 0,
+      "xbtfTextId": 3131,
+      "mass": 12000,
+      "mainThrust": 380000,
+      "maneuverThrust": 105000,
+      "pitchRate": 1.3,
+      "yawRate": 1.15,
+      "rollRate": 2.2,
+      "cruiseSpeed": 145,
+      "hullRadius": 24
+    },
+    {
       "id": "argon_discoverer",
-      "name": "Discoverer",
+      "name": "Argon Discoverer",
+      "xbtfBodyId": 19,
+      "xbtfTextId": 3151,
       "mass": 8000,
       "mainThrust": 320000,
       "maneuverThrust": 90000,
@@ -10,11 +35,13 @@
       "yawRate": 1.4,
       "rollRate": 2.6,
       "cruiseSpeed": 168,
-      "hullRadius": 9
+      "hullRadius": 17
     },
     {
-      "id": "argon_mercury",
-      "name": "Mercury",
+      "id": "argon_lifter",
+      "name": "Argon Lifter",
+      "xbtfBodyId": 2,
+      "xbtfTextId": 3171,
       "mass": 90000,
       "mainThrust": 900000,
       "maneuverThrust": 180000,
@@ -22,19 +49,21 @@
       "yawRate": 0.45,
       "rollRate": 0.7,
       "cruiseSpeed": 78,
-      "hullRadius": 34
+      "hullRadius": 55
     },
     {
-      "id": "teladi_vulture",
-      "name": "Vulture",
-      "mass": 140000,
-      "mainThrust": 1100000,
-      "maneuverThrust": 220000,
-      "pitchRate": 0.35,
-      "yawRate": 0.3,
-      "rollRate": 0.5,
-      "cruiseSpeed": 62,
-      "hullRadius": 46
+      "id": "teladi_falcon",
+      "name": "Teladi Falcon",
+      "xbtfBodyId": 17,
+      "xbtfTextId": 3531,
+      "mass": 14000,
+      "mainThrust": 360000,
+      "maneuverThrust": 96000,
+      "pitchRate": 1.1,
+      "yawRate": 1.0,
+      "rollRate": 1.9,
+      "cruiseSpeed": 132,
+      "hullRadius": 23
     }
   ]
 }
