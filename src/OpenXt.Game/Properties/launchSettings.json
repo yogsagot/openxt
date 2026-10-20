@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "XBTF": {
+      "commandName": "Project",
+      "commandLineArgs": "--game xbtf"
+    },
+    "X-Tension": {
+      "commandName": "Project",
+      "commandLineArgs": "--game xtension"
+    }
+  }
+}
