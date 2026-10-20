@@ -1,0 +1,65 @@
+{
+  // X: Beyond the Frontier's wares: everything its factories make, plus the bulk goods of the executable's
+  // ware table (energy, minerals, food), which also lists a few no factory makes.
+  // games/xtension has its own.
+  //
+  // Ids are the English names in snake case, except that equipment reuses the ship roster's ids
+  // (alpha_ire ... gamma_hept, shield_1mw ... shield_125mw, mosquito ... hornet). Regenerate with
+  //     dotnet run --project tools/OpenXt.AssetImport -- wares --game xbtf --json
+  //
+  // XBTF's executable holds no ware prices and elite-games.ru has none for XBTF, so there are
+  // none here.
+  //
+  // A mod changes this roster by layering its own data/wares/wares.json; entries merge by id.
+  "wares": [
+    // --- Wares -------------------------------------------------------------------------------------
+    {"id": "energy_cells", "name": "Energy Cells", "xbtfTextId": 2013},
+    {"id": "ore", "name": "Ore", "xbtfTextId": 2023},
+    {"id": "silicon_wafers", "name": "Silicon Wafers", "xbtfTextId": 2033},
+    {"id": "warheads", "name": "Warheads", "xbtfTextId": 2043},
+    {"id": "crystals", "name": "Crystals", "xbtfTextId": 2053},
+    {"id": "quantum_tubes", "name": "Quantum Tubes", "xbtfTextId": 2063},
+    {"id": "microchips", "name": "Microchips", "xbtfTextId": 2073},
+    {"id": "computer_components", "name": "Computer Components", "xbtfTextId": 2083},
+    {"id": "delexian_wheat", "name": "Delexian Wheat", "xbtfTextId": 2143},
+    {"id": "argnu_beef", "name": "Argnu beef", "xbtfTextId": 2153},
+    {"id": "cloth_rimes", "name": "Cloth Rimes", "xbtfTextId": 2173},
+    {"id": "meatsteak_cahoonas", "name": "Meatsteak Cahoonas", "xbtfTextId": 2183},
+    {"id": "space_fuel", "name": "Space Fuel", "xbtfTextId": 2193},
+    {"id": "plankton", "name": "Plankton", "xbtfTextId": 2243},
+    {"id": "bogas", "name": "BoGas", "xbtfTextId": 2253},
+    {"id": "stott_spices", "name": "Stott Spices", "xbtfTextId": 2273},
+    {"id": "bofu", "name": "BoFu", "xbtfTextId": 2283},
+    {"id": "scruffin_fruits", "name": "Scruffin Fruits", "xbtfTextId": 2343},
+    {"id": "chelts_meat", "name": "Chelts Meat", "xbtfTextId": 2353},
+    {"id": "massom_powder", "name": "Massom powder", "xbtfTextId": 2373},
+    {"id": "rastar_oil", "name": "Rastar Oil", "xbtfTextId": 2383},
+    {"id": "soja_beans", "name": "Soja Beans", "xbtfTextId": 2443},
+    {"id": "maja_snails", "name": "Maja Snails", "xbtfTextId": 2453},
+    {"id": "majaglit", "name": "Majaglit", "xbtfTextId": 2473},
+    {"id": "soja_husk", "name": "Soja Husk", "xbtfTextId": 2483},
+    {"id": "sunrise_flowers", "name": "Sunrise Flowers", "xbtfTextId": 2543},
+    {"id": "teladianium", "name": "Teladianium", "xbtfTextId": 2553},
+    {"id": "swamp_plant", "name": "Swamp Plant", "xbtfTextId": 2563},
+    {"id": "nostrop_oil", "name": "Nostrop Oil", "xbtfTextId": 2573},
+    {"id": "spaceweed", "name": "Spaceweed", "xbtfTextId": 2583},
+    {"id": "alpha_ire", "name": "Alpha Impulse Ray Emitter", "xbtfTextId": 2613},
+    {"id": "beta_ire", "name": "Beta Impulse Ray Emitter", "xbtfTextId": 2623},
+    {"id": "gamma_ire", "name": "Gamma Impulse Ray Emitter", "xbtfTextId": 2633},
+    {"id": "alpha_pac", "name": "Alpha Particle Accelerator Cannon", "xbtfTextId": 2643},
+    {"id": "beta_pac", "name": "Beta Particle Accelerator Cannon", "xbtfTextId": 2653},
+    {"id": "gamma_pac", "name": "Gamma Particle Accelerator Cannon", "xbtfTextId": 2663},
+    {"id": "alpha_hept", "name": "Alpha H.E. Plasma Thrower", "xbtfTextId": 2673},
+    {"id": "beta_hept", "name": "Beta H.E. Plasma Thrower", "xbtfTextId": 2683},
+    {"id": "gamma_hept", "name": "Gamma H.E. Plasma Thrower", "xbtfTextId": 2693},
+    {"id": "shield_1mw", "name": "1 MW Shield", "xbtfTextId": 2713},
+    {"id": "shield_5mw", "name": "5 MW Shield", "xbtfTextId": 2723},
+    {"id": "shield_25mw", "name": "25 MW Shield", "xbtfTextId": 2733},
+    {"id": "shield_125mw", "name": "125 MW Shield", "xbtfTextId": 2743},
+    {"id": "mosquito", "name": "Mosquito Missile", "xbtfTextId": 2813},
+    {"id": "wasp", "name": "Wasp Missile", "xbtfTextId": 2823},
+    {"id": "dragonfly", "name": "Dragonfly Missile", "xbtfTextId": 2833},
+    {"id": "silkworm", "name": "Silkworm Missile", "xbtfTextId": 2843},
+    {"id": "hornet", "name": "Hornet Missile", "xbtfTextId": 2853}
+  ]
+}

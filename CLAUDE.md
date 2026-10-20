@@ -90,7 +90,8 @@ openxt.slnx
 │   ├── Modding/                ISimPlugin, SimRegistry, CoreSimPlugin, SimBootstrap
 │   ├── Flight/FlightModel.cs   custom integrator — the feel lives here
 │   ├── Physics/                Bepu wrapper + narrow-phase / pose-integrator callbacks
-│   └── Data/                   ShipDefinition, ShipCatalog, GameRuleset, ContentCatalogs,
+│   └── Data/                   ShipDefinition, ShipCatalog, StationDefinition, WareDefinition,
+│                               DefinitionCatalog, GameRuleset, ContentCatalogs,
 │                               source-generated JSON context
 ├── src/OpenXt.Assets           the converted-asset format: .oxmesh, cache paths, manifest
 │                               shared by the game (reads) and the importer (writes), so the
@@ -183,6 +184,11 @@ Three things to know before touching the pipeline:
   differently (XBTF and X-Tension swap the M4/M5 hulls of Argon, Boron and Split, for one). Body titles in
   `meshinfo` are developer working names and often wrong; never map ships by title or size, and never copy ids
   from one roster to the other.
+- **Stations and wares come from the same object tables** (`StationTable`, `WareTable`; `openxt-import stations` and
+  `wares`). A station record gives body, kind, text id and scene (`v/0NNNN.pbd` in XBTF, `cut/` in X-Tension); a
+  factory's product is its text id + 2. Race is not stored: `StationCommands` recovers it from names, per-race
+  scene-id blocks and variant row order, and warns if they disagree. Production recipes, cycle times and all prices
+  exist only for X-Tension, from elite-games.ru; XBTF has none.
 
 Rules:
 

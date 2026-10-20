@@ -116,6 +116,8 @@ public sealed record ShipCatalogFile
     ReadCommentHandling = JsonCommentHandling.Skip,
     AllowTrailingCommas = true)]
 [JsonSerializable(typeof(ShipCatalogFile))]
+[JsonSerializable(typeof(StationCatalogFile))]
+[JsonSerializable(typeof(WareCatalogFile))]
 [JsonSerializable(typeof(GameRuleset))]
 public partial class SimJsonContext : JsonSerializerContext;
 

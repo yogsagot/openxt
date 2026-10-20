@@ -23,6 +23,12 @@ public static class ContentCatalogs
     /// <summary>Ruleset path, relative to a package's content root.</summary>
     public const string RulesetPath = "rules/ruleset.json";
 
+    /// <summary>Station catalog path. Optional: a game without stations loads an empty catalog.</summary>
+    public const string StationsPath = "stations/stations.json";
+
+    /// <summary>Ware catalog path. Optional, like stations.</summary>
+    public const string WaresPath = "wares/wares.json";
+
     public static ShipCatalog LoadShips(ModContent content)
     {
         IReadOnlyList<string> layers = content.Layers(ShipsPath);
@@ -37,6 +43,24 @@ public static class ContentCatalogs
             throw new ModContentException($"The merged {ShipsPath} contains no ships.");
 
         return ShipCatalog.Create(file.Ships);
+    }
+
+    public static DefinitionCatalog<StationDefinition> LoadStations(ModContent content)
+    {
+        IReadOnlyList<string> layers = content.Layers(StationsPath);
+        return layers.Count == 0
+            ? DefinitionCatalog<StationDefinition>.Empty
+            : DefinitionCatalog<StationDefinition>.Create(
+                Deserialize(layers, SimJsonContext.Default.StationCatalogFile, StationsPath).Stations);
+    }
+
+    public static DefinitionCatalog<WareDefinition> LoadWares(ModContent content)
+    {
+        IReadOnlyList<string> layers = content.Layers(WaresPath);
+        return layers.Count == 0
+            ? DefinitionCatalog<WareDefinition>.Empty
+            : DefinitionCatalog<WareDefinition>.Create(
+                Deserialize(layers, SimJsonContext.Default.WareCatalogFile, WaresPath).Wares);
     }
 
     public static GameRuleset LoadRuleset(ModContent content)

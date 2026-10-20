@@ -30,6 +30,9 @@ public static class SimBootstrap
     {
         ShipCatalog ships = ContentCatalogs.LoadShips(host.Content);
         GameRuleset rules = ContentCatalogs.LoadRuleset(host.Content);
+        DefinitionCatalog<StationDefinition> stations = ContentCatalogs.LoadStations(host.Content);
+        DefinitionCatalog<WareDefinition> wares = ContentCatalogs.LoadWares(host.Content);
+        CheckWareReferences(host, stations, wares);
 
         SimRegistry registry = new(ships, rules);
 
@@ -56,7 +59,29 @@ public static class SimBootstrap
             }
         }
 
-        return new Universe(ships, rules, registry.Build());
+        return new Universe(ships, rules, registry.Build(), stations, wares);
+    }
+
+    /// <summary>
+    /// A station that makes or consumes a ware nobody defines is a data mistake in some package —
+    /// reported, never thrown, so one stale mod cannot make the game unbootable.
+    /// </summary>
+    private static void CheckWareReferences(
+        ModHost host, DefinitionCatalog<StationDefinition> stations, DefinitionCatalog<WareDefinition> wares)
+    {
+        string source = host.IsLoaded ? host.Game.Id : "(engine)";
+
+        foreach (StationDefinition station in stations.All)
+        {
+            if (station.Product is { } product && !wares.Contains(product))
+                host.Diagnostics.Warning(source, $"station '{station.Id}' produces '{product}', which no package defines.");
+
+            foreach (StationInput input in station.Inputs ?? [])
+            {
+                if (!wares.Contains(input.Ware))
+                    host.Diagnostics.Warning(source, $"station '{station.Id}' consumes '{input.Ware}', which no package defines.");
+            }
+        }
     }
 
     /// <summary>

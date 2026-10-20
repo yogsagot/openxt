@@ -28,7 +28,7 @@ public static partial class ShipCommands
         return 0;
     }
 
-    private static TextTable? ReadEnglish(XInstall install)
+    internal static TextTable? ReadEnglish(XInstall install)
     {
         using CatArchive archive = install.OpenArchive();
         TextTable? merged = null;

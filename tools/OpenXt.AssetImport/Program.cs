@@ -46,6 +46,10 @@ internal static class Cli
                     ImportCommand.Run(install, HasFlag(rest, "--force"), ReadScale(rest))),
                 "ships" => WithInstall(rest, (install, _) =>
                     ShipCommands.Run(install, HasFlag(rest, "--json"))),
+                "stations" => WithInstall(rest, (install, _) =>
+                    StationCommands.RunStations(install, HasFlag(rest, "--json"))),
+                "wares" => WithInstall(rest, (install, _) =>
+                    StationCommands.RunWares(install, HasFlag(rest, "--json"))),
                 "meshinfo" => CacheCommands.MeshInfo(ReadOption(rest, "--game") ?? "xbtf", Positionals(rest)),
                 "where" => Where(),
                 _ => Fail($"unknown verb '{verb}'"),
@@ -189,6 +193,8 @@ internal static class Cli
               import [--force] [--scale N]  convert the archive into OpenXT's local asset cache
               meshinfo <bodyId>...        inspect converted meshes (sizes are in metres)
               ships [--json]              dump the ship table compiled into the game executable
+              stations [--json]           dump its station table, with race and roster ids
+              wares [--json]              dump its wares: the ware table plus every factory product
 
             Model verb:
               inspect <file>...           dump mesh statistics via Assimp

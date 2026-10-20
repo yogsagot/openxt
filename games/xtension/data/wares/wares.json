@@ -1,0 +1,70 @@
+{
+  // X-Tension's wares: everything its factories make, plus the bulk goods of the executable's
+  // ware table (energy, minerals, food), which also lists a few no factory makes.
+  // games/xbtf has its own.
+  //
+  // Ids are the English names in snake case, except that equipment reuses the ship roster's ids
+  // (alpha_ire ... gamma_hept, shield_1mw ... shield_125mw, mosquito ... hornet). Regenerate with
+  //     dotnet run --project tools/OpenXt.AssetImport -- wares --game xtension --json
+  //
+  // priceMin and priceMax come from elite-games.ru: goods.shtml for trade goods, the price table
+  // in fabsprofit.shtml for equipment. The executable holds no prices. shield_1mw has none: the
+  // site gives it exactly the Silkworm's range, which looks like a copy slip.
+  //
+  // A mod changes this roster by layering its own data/wares/wares.json; entries merge by id.
+  "wares": [
+    // --- Wares -------------------------------------------------------------------------------------
+    {"id": "energy_cells", "name": "Energy Cells", "xbtfTextId": 2013, "priceMin": 6, "priceMax": 26},
+    {"id": "ore", "name": "Ore", "xbtfTextId": 2023, "priceMin": 87, "priceMax": 159},
+    {"id": "silicon_wafers", "name": "Silicon Wafers", "xbtfTextId": 2033, "priceMin": 414, "priceMax": 594},
+    {"id": "warheads", "name": "Warheads", "xbtfTextId": 2043, "priceMin": 165, "priceMax": 280},
+    {"id": "crystals", "name": "Crystals", "xbtfTextId": 2053, "priceMin": 1420, "priceMax": 1940},
+    {"id": "quantum_tubes", "name": "Quantum Tubes", "xbtfTextId": 2063, "priceMin": 3060, "priceMax": 3690},
+    {"id": "microchips", "name": "Microchips", "xbtfTextId": 2073, "priceMin": 12640, "priceMax": 14320},
+    {"id": "computer_components", "name": "Computer Components", "xbtfTextId": 2083, "priceMin": 1140, "priceMax": 1560},
+    {"id": "delexian_wheat", "name": "Delexian Wheat", "xbtfTextId": 2143, "priceMin": 19, "priceMax": 37},
+    {"id": "argnu_beef", "name": "Argnu beef", "xbtfTextId": 2153, "priceMin": 82, "priceMax": 126},
+    {"id": "cloth_rimes", "name": "Cloth Rimes", "xbtfTextId": 2173, "priceMin": 248, "priceMax": 328},
+    {"id": "meatsteak_cahoonas", "name": "Meatsteak Cahoonas", "xbtfTextId": 2183, "priceMin": 52, "priceMax": 92},
+    {"id": "space_fuel", "name": "Space Fuel", "xbtfTextId": 2193, "priceMin": 420, "priceMax": 1020},
+    {"id": "plankton", "name": "Plankton", "xbtfTextId": 2243, "priceMin": 12, "priceMax": 28},
+    {"id": "bogas", "name": "BoGas", "xbtfTextId": 2253, "priceMin": 328, "priceMax": 424},
+    {"id": "stott_spices", "name": "Stott Spices", "xbtfTextId": 2273, "priceMin": 52, "priceMax": 92},
+    {"id": "bofu", "name": "BoFu", "xbtfTextId": 2283, "priceMin": 260, "priceMax": 316},
+    {"id": "scruffin_fruits", "name": "Scruffin Fruits", "xbtfTextId": 2343, "priceMin": 11, "priceMax": 29},
+    {"id": "chelts_meat", "name": "Chelts Meat", "xbtfTextId": 2353, "priceMin": 66, "priceMax": 148},
+    {"id": "massom_powder", "name": "Massom powder", "xbtfTextId": 2373, "priceMin": 17, "priceMax": 55},
+    {"id": "rastar_oil", "name": "Rastar Oil", "xbtfTextId": 2383, "priceMin": 330, "priceMax": 640},
+    {"id": "soja_beans", "name": "Soja Beans", "xbtfTextId": 2443, "priceMin": 7, "priceMax": 41},
+    {"id": "maja_snails", "name": "Maja Snails", "xbtfTextId": 2453, "priceMin": 77, "priceMax": 231},
+    {"id": "majaglit", "name": "Majaglit", "xbtfTextId": 2473, "priceMin": 12, "priceMax": 60},
+    {"id": "soja_husk", "name": "Soja Husk", "xbtfTextId": 2483, "priceMin": 210, "priceMax": 520},
+    {"id": "sunrise_flowers", "name": "Sunrise Flowers", "xbtfTextId": 2543, "priceMin": 10, "priceMax": 30},
+    {"id": "teladianium", "name": "Teladianium", "xbtfTextId": 2553, "priceMin": 112, "priceMax": 200},
+    {"id": "swamp_plant", "name": "Swamp Plant", "xbtfTextId": 2563, "priceMin": 112, "priceMax": 200},
+    {"id": "nostrop_oil", "name": "Nostrop Oil", "xbtfTextId": 2573, "priceMin": 44, "priceMax": 100},
+    {"id": "spaceweed", "name": "Spaceweed", "xbtfTextId": 2583, "priceMin": 2000, "priceMax": 3840},
+    {"id": "alpha_ire", "name": "Alpha Impulse Ray Emitter", "xbtfTextId": 2613, "priceMin": 1120, "priceMax": 1560},
+    {"id": "beta_ire", "name": "Beta Impulse Ray Emitter", "xbtfTextId": 2623, "priceMin": 2340, "priceMax": 3030},
+    {"id": "gamma_ire", "name": "Gamma Impulse Ray Emitter", "xbtfTextId": 2633, "priceMin": 6240, "priceMax": 7240},
+    {"id": "alpha_pac", "name": "Alpha Particle Accelerator Cannon", "xbtfTextId": 2643, "priceMin": 12780, "priceMax": 14160},
+    {"id": "beta_pac", "name": "Beta Particle Accelerator Cannon", "xbtfTextId": 2653, "priceMin": 25800, "priceMax": 28100},
+    {"id": "gamma_pac", "name": "Gamma Particle Accelerator Cannon", "xbtfTextId": 2663, "priceMin": 65200, "priceMax": 69600},
+    {"id": "alpha_hept", "name": "Alpha H.E. Plasma Thrower", "xbtfTextId": 2673, "priceMin": 132000, "priceMax": 137600},
+    {"id": "beta_hept", "name": "Beta H.E. Plasma Thrower", "xbtfTextId": 2683, "priceMin": 266800, "priceMax": 272400},
+    {"id": "gamma_hept", "name": "Gamma H.E. Plasma Thrower", "xbtfTextId": 2693, "priceMin": 528000, "priceMax": 539000},
+    {"id": "shield_1mw", "name": "1 MW Shield", "xbtfTextId": 2713},
+    {"id": "shield_5mw", "name": "5 MW Shield", "xbtfTextId": 2723, "priceMin": 58800, "priceMax": 62500},
+    {"id": "shield_25mw", "name": "25 MW Shield", "xbtfTextId": 2733, "priceMin": 553500, "priceMax": 565000},
+    {"id": "shield_125mw", "name": "125 MW Shield", "xbtfTextId": 2743, "priceMin": 1660000, "priceMax": 1695000},
+    {"id": "mosquito", "name": "Mosquito Missile", "xbtfTextId": 2813, "priceMin": 264, "priceMax": 408},
+    {"id": "wasp", "name": "Wasp Missile", "xbtfTextId": 2823, "priceMin": 820, "priceMax": 1190},
+    {"id": "dragonfly", "name": "Dragonfly Missile", "xbtfTextId": 2833, "priceMin": 1740, "priceMax": 2300},
+    {"id": "silkworm", "name": "Silkworm Missile", "xbtfTextId": 2843, "priceMin": 4680, "priceMax": 5430},
+    {"id": "hornet", "name": "Hornet Missile", "xbtfTextId": 2853, "priceMin": 9550, "priceMax": 10650},
+    {"id": "navigation_relay_satellite", "name": "Navigation Relay Satellite", "xbtfTextId": 3893, "priceMin": 6670, "priceMax": 6804},
+    {"id": "squash_mine", "name": "SQUASH Mine", "xbtfTextId": 3913, "priceMin": 15000, "priceMax": 15320},
+    {"id": "lasertower", "name": "Lasertower", "xbtfTextId": 3923, "priceMin": 66660, "priceMax": 68100},
+    {"id": "fighter_drone", "name": "Fighter Drone", "xbtfTextId": 3933, "priceMin": 2000, "priceMax": 2040}
+  ]
+}

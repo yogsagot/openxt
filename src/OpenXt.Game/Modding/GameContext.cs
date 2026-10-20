@@ -36,6 +36,10 @@ public sealed class GameContext
 
     public ShipCatalog Ships => Universe.Ships;
 
+    public DefinitionCatalog<StationDefinition> Stations => Universe.Stations;
+
+    public DefinitionCatalog<WareDefinition> Wares => Universe.Wares;
+
     public GameRuleset Rules => Universe.Rules;
 
     /// <summary>True while the window has focus; input is only read then.</summary>

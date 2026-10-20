@@ -8,9 +8,9 @@ namespace OpenXt.Sim;
 /// everything it owns must stay usable with no graphics device and no window, which is what
 /// makes the simulation testable.
 ///
-/// It holds what the loaded packages produced — the merged ship catalog, the running game's
-/// ruleset, and the ordered system plan every sector is built from — so nothing below this line
-/// needs to know that mods exist.
+/// It holds what the loaded packages produced — the merged ship, station and ware catalogs, the
+/// running game's ruleset, and the ordered system plan every sector is built from — so nothing
+/// below this line needs to know that mods exist.
 /// </summary>
 public sealed class Universe : IDisposable
 {
@@ -21,6 +21,10 @@ public sealed class Universe : IDisposable
 
     public ShipCatalog Ships { get; }
 
+    public DefinitionCatalog<StationDefinition> Stations { get; }
+
+    public DefinitionCatalog<WareDefinition> Wares { get; }
+
     /// <summary>The running game's rules and start state.</summary>
     public GameRuleset Rules { get; }
 
@@ -29,9 +33,16 @@ public sealed class Universe : IDisposable
 
     public IReadOnlyList<Sector> Sectors => _sectors;
 
-    public Universe(ShipCatalog ships, GameRuleset rules, SectorSystemPlan systems)
+    public Universe(
+        ShipCatalog ships,
+        GameRuleset rules,
+        SectorSystemPlan systems,
+        DefinitionCatalog<StationDefinition>? stations = null,
+        DefinitionCatalog<WareDefinition>? wares = null)
     {
         Ships = ships;
+        Stations = stations ?? DefinitionCatalog<StationDefinition>.Empty;
+        Wares = wares ?? DefinitionCatalog<WareDefinition>.Empty;
         Rules = rules;
         Systems = systems;
     }

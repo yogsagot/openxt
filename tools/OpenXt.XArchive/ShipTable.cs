@@ -131,7 +131,6 @@ public static class ShipTable
     public const float DisplayUnitsPerMetre = 222f;
 
     private const int FirstTextId = 3161;
-    private const int TextIdOffset = 24;
 
     // Equipment indices follow the ware order of the text tables (lasers 2613-2693, shields
     // 2713-2743, missiles 2813-2853, ten ids apart), and match the maximum equipment
@@ -161,18 +160,15 @@ public static class ShipTable
     public static IReadOnlyList<ShipRecord> Read(XGame game, ReadOnlySpan<byte> exe)
     {
         int stride = RecordSize(game);
-        int start = FindStart(exe, stride);
+        int start = ObjectTable.FindRecord(exe, stride, FirstTextId);
         if (start < 0)
             throw new InvalidDataException("ship table not found in executable");
 
         List<ShipRecord> records = [];
         for (int offset = start; offset + stride <= exe.Length; offset += stride)
         {
-            int[] raw = new int[stride / 4];
-            for (int i = 0; i < raw.Length; i++)
-                raw[i] = BinaryPrimitives.ReadInt32LittleEndian(exe.Slice(offset + i * 4));
-
-            if (!IsObjectTextId(raw[6]))
+            int[] raw = ObjectTable.ReadRaw(exe, offset, stride);
+            if (!ObjectTable.IsObjectTextId(raw[6]))
                 break;
 
             records.Add(new ShipRecord(game, offset, raw));
@@ -181,36 +177,7 @@ public static class ShipTable
         return records;
     }
 
-    /// <summary>
-    /// The first int32 3161 that sits at the text-id slot of a record followed by more records.
-    /// One neighbour is enough to reject the stray 3161 constants elsewhere in the image.
-    /// </summary>
-    private static int FindStart(ReadOnlySpan<byte> exe, int stride)
-    {
-        Span<byte> needle = stackalloc byte[4];
-        BinaryPrimitives.WriteInt32LittleEndian(needle, FirstTextId);
-
-        int searched = 0;
-        while (searched < exe.Length)
-        {
-            int hit = exe[searched..].IndexOf(needle);
-            if (hit < 0)
-                return -1;
-
-            int at = searched + hit;
-            int start = at - TextIdOffset;
-            int next = at + stride;
-
-            if (start >= 0 && at % 4 == 0 && next + 4 <= exe.Length &&
-                IsObjectTextId(BinaryPrimitives.ReadInt32LittleEndian(exe.Slice(next))))
-                return start;
-
-            searched = at + 1;
-        }
-
-        return -1;
-    }
-
-    /// <summary>Ship and object names live at 2000-3999 in the text tables; see <see cref="TextTable"/>.</summary>
-    private static bool IsObjectTextId(int id) => id is >= 2000 and < 4000;
+    /// <summary>File offset of the first ship record, the Argon Mammoth; -1 if there is none.</summary>
+    internal static int FindStart(XGame game, ReadOnlySpan<byte> exe) =>
+        ObjectTable.FindRecord(exe, RecordSize(game), FirstTextId);
 }

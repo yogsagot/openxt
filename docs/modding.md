@@ -106,6 +106,8 @@ Current content paths:
 |---|---|
 | `ships/ships.json` | The ship catalog. See below. |
 | `rules/ruleset.json` | The game's rules and start state: asset cache key, start sector, player ship, initial traffic. |
+| `stations/stations.json` | Station types: shipyards, docks, trading stations, factories. Optional. |
+| `wares/wares.json` | Tradeable wares. Optional; stations name them by id. |
 
 A total conversion is a mod that patches `rules/ruleset.json`.
 
@@ -129,6 +131,26 @@ A total conversion is a mod that patches `rules/ruleset.json`.
 The game fields are optional and describe the original ship; the flight model reads only the first
 group. The first-party rosters derive `cruiseSpeed` from `speed` and `mainThrust` from
 `mass × acceleration`, so a mod that retunes a ship should change those, not just `speed`.
+
+### Station fields
+
+| Field | Meaning |
+|---|---|
+| `id`, `name` | Identity, e.g. `argon_solar_power_plant`. |
+| `race`, `kind` | `argon` … `teladi`, `xenon`, `pirate`, `goner`; `shipyard`, `equipment_dock`, `trading_station`, `factory`, `mine`, `power_plant`, `pirate_base`, `goner_temple`, `xenon_station`. |
+| `xbtfBodyId`, `xbtfSceneId`, `xbtfTextId` | Main model, multi-part scene (`v/` in XBTF, `cut/` in X-Tension) and text in the player's install; -1 for none. |
+| `product` | Ware id the station makes. |
+| `inputs`, `output`, `cycleSeconds` | One production cycle: `[{ "ware": id, "amount": n }]` in, `output` units of `product` out, taking `cycleSeconds`. |
+| `price`, `hull` | Purchase price in credits; hull. |
+
+### Ware fields
+
+| Field | Meaning |
+|---|---|
+| `id`, `name`, `xbtfTextId` | Identity and text. Equipment uses the ship roster's ids (`gamma_pac`, `shield_25mw`, `hornet`). |
+| `priceMin`, `priceMax` | Trading range in credits. |
+
+A station naming a ware no package defines is reported in the diagnostics and otherwise ignored.
 
 ## Code
 
