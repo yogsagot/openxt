@@ -13,7 +13,8 @@
   "assetKey": "xbtf",
 
   "startSector": "Argon Prime",
-  "playerShip": "argon_elite",
+  // The original's experimental shuttle, the ship the player arrives in.
+  "playerShip": "xperimental",
 
   // Placeholder scenery: something to look at and something for the broadphase to chew on. It used
   // to be a loop in OpenXtGame; it is data now because that is the rule, and because X-Tension

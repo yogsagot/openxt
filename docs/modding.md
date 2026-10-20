@@ -104,10 +104,31 @@ Current content paths:
 
 | Path | What |
 |---|---|
-| `ships/ships.json` | The ship catalog. |
+| `ships/ships.json` | The ship catalog. See below. |
 | `rules/ruleset.json` | The game's rules and start state: asset cache key, start sector, player ship, initial traffic. |
 
 A total conversion is a mod that patches `rules/ruleset.json`.
+
+### Ship fields
+
+| Field | Meaning |
+|---|---|
+| `id`, `name` | Identity. `id` is what rulesets, traffic and other mods refer to. |
+| `xbtfBodyId`, `xbtfTextId` | Model and text in the player's converted asset cache; -1 for none. |
+| `mass`, `mainThrust`, `maneuverThrust` | Kilograms and newtons. What the flight model integrates. |
+| `pitchRate`, `yawRate`, `rollRate` | Peak angular acceleration, rad/s². |
+| `cruiseSpeed`, `hullRadius` | Flight-assist hold speed (m/s) and collision radius (m). |
+| `class` | `TL`, `TS`, `M0`-`M5`, `Pirate`, `Goner`. |
+| `speed`, `speedMax`, `acceleration` | The original game's top speed, fully tuned top speed (m/s) and acceleration (m/s²), as the game displays them. |
+| `steeringPitch`, `steeringYaw`, `steeringRoll`, `rudderTunings` | The game's steering values and rudder upgrades. |
+| `hull`, `power` | Hull strength; power generator output in MW. |
+| `cargo`, `cargoMax` | Cargo bay as built and fully extended. |
+| `laserMounts`, `maxLaser`, `shieldMounts`, `maxShield`, `missileCount`, `maxMissile` | Equipment limits; the `max*` fields name a ware (`gamma_pac`, `shield_25mw`, `hornet`). |
+| `priceS`, `priceM`, `priceL` | Shipyard price in credits of the S, M and L variants; a TL has one price, in `priceS`. |
+
+The game fields are optional and describe the original ship; the flight model reads only the first
+group. The first-party rosters derive `cruiseSpeed` from `speed` and `mainThrust` from
+`mass × acceleration`, so a mod that retunes a ship should change those, not just `speed`.
 
 ## Code
 
@@ -192,4 +213,4 @@ explanation, when someone runs `--game xtension`.
 * Contract version: `ModApi.Version`. Manifests declare it as `apiVersion`.
 * CLI: `--game <id>`, `--mods <path>`, `--disable <ids>`, `--no-plugins`, `--list-mods`, `--help`.
 * Sample: `samples/mods/OpenXt.SampleMod`.
-* First-party packages worth reading: `games/xbtf`, `mods/openxt.ships-core`.
+* First-party packages worth reading: `games/xbtf`, `games/xtension`.

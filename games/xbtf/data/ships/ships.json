@@ -1,0 +1,1213 @@
+{
+  // X: Beyond the Frontier's ship roster. X-Tension has its own in games/xtension; the two
+  // executables disagree on most numbers, so neither game borrows the other's.
+  //
+  // Each entry has two halves. Everything above "// ours" is the original game's own data, read
+  // from the ship table compiled into the executable — regenerate it with
+  //     dotnet run --project tools/OpenXt.AssetImport -- ships --game xbtf --json
+  // Speed and acceleration are in the m/s the game displays (raw / 222, calibrated against
+  // elite-games.ru's ship database; the X-Tension manual prints the raw numbers as if they were m/s).
+  // Ship statistics are facts about the game, not copyrighted assets, so they live here; meshes,
+  // textures and the games' text never do. Body and text ids are the table's own pairing.
+  //
+  // Below "// ours" is hand-authored: the game has no notion of mass, so mass, manoeuvring thrust,
+  // turn rates and the collision radius are set per class and race and tuned by feel. Two flight
+  // values follow the game: cruiseSpeed = speed, mainThrust = mass x acceleration.
+  //
+  // XBTF's table holds flight data only: class, speed, acceleration and steering. There is no
+  // cargo, hull or equipment for these ships in X.exe — the code reads nothing past the
+  // acceleration — so those fields are absent here rather than guessed.
+  //
+  // Left out on purpose: stations, the Commandship (2901), training drones (2911), the Xenon
+  // Mother's tower and other "Unknown Object" props.
+  //
+  // A mod changes this roster by layering its own data/ships/ships.json; entries merge by id.
+  "ships": [
+    // --- Argon -------------------------------------------------------------------------------------
+    // TL.
+    {
+      "id": "argon_mammoth",
+      "name": "Argon Mammoth",
+      "xbtfBodyId": 102,
+      "xbtfTextId": 3161,
+      "class": "TL",
+      "speed": 55.41,
+      "acceleration": 5.41,
+      "steeringPitch": 0.001,
+      "steeringYaw": 0.005,
+      "steeringRoll": 0.005,
+      "power": 1000,
+      // ours
+      "mass": 600000,
+      "mainThrust": 3250000,
+      "maneuverThrust": 900000,
+      "pitchRate": 0.2,
+      "yawRate": 0.18,
+      "rollRate": 0.25,
+      "cruiseSpeed": 55.41,
+      "hullRadius": 160
+    },
+    // TS.
+    {
+      "id": "argon_lifter",
+      "name": "Argon Lifter",
+      "xbtfBodyId": 2,
+      "xbtfTextId": 3171,
+      "class": "TS",
+      "speed": 47.52,
+      "acceleration": 1.35,
+      "steeringPitch": 0.01,
+      "steeringYaw": 0.01,
+      "steeringRoll": 0.005,
+      "power": 100,
+      // ours
+      "mass": 90000,
+      "mainThrust": 122000,
+      "maneuverThrust": 180000,
+      "pitchRate": 0.5,
+      "yawRate": 0.45,
+      "rollRate": 0.7,
+      "cruiseSpeed": 47.52,
+      "hullRadius": 55
+    },
+    // M1.
+    {
+      "id": "argon_one",
+      "name": "Argon One",
+      "xbtfBodyId": 103,
+      "xbtfTextId": 3111,
+      "class": "M1",
+      "speed": 23.51,
+      "acceleration": 0.36,
+      "steeringPitch": 0.001,
+      "steeringYaw": 0.005,
+      "steeringRoll": 0.01,
+      "power": 1000,
+      // ours
+      "mass": 2000000,
+      "mainThrust": 720000,
+      "maneuverThrust": 3000000,
+      "pitchRate": 0.12,
+      "yawRate": 0.1,
+      "rollRate": 0.15,
+      "cruiseSpeed": 23.51,
+      "hullRadius": 300
+    },
+    // M2.
+    {
+      "id": "argon_titan",
+      "name": "Argon Titan",
+      "xbtfBodyId": 101,
+      "xbtfTextId": 3121,
+      "class": "M2",
+      "speed": 63.65,
+      "acceleration": 6.31,
+      "steeringPitch": 0.01,
+      "steeringYaw": 0.001,
+      "steeringRoll": 0.01,
+      "power": 1000,
+      // ours
+      "mass": 1200000,
+      "mainThrust": 7570000,
+      "maneuverThrust": 2400000,
+      "pitchRate": 0.15,
+      "yawRate": 0.13,
+      "rollRate": 0.2,
+      "cruiseSpeed": 63.65,
+      "hullRadius": 220
+    },
+    // M3.
+    {
+      "id": "argon_elite",
+      "name": "Argon Elite",
+      "xbtfBodyId": 0,
+      "xbtfTextId": 3131,
+      "class": "M3",
+      "speed": 69.37,
+      "acceleration": 2.7,
+      "steeringPitch": 0.25,
+      "steeringYaw": 0.2,
+      "steeringRoll": 0.25,
+      "power": 100,
+      // ours
+      "mass": 12000,
+      "mainThrust": 32000,
+      "maneuverThrust": 105000,
+      "pitchRate": 1.3,
+      "yawRate": 1.15,
+      "rollRate": 2.2,
+      "cruiseSpeed": 69.37,
+      "hullRadius": 24
+    },
+    // M4.
+    {
+      "id": "argon_buster",
+      "name": "Argon Buster",
+      "xbtfBodyId": 19,
+      "xbtfTextId": 3141,
+      "class": "M4",
+      "speed": 55.05,
+      "acceleration": 2.7,
+      "steeringPitch": 0.1,
+      "steeringYaw": 0.15,
+      "steeringRoll": 0.15,
+      "power": 100,
+      // ours
+      "mass": 10000,
+      "mainThrust": 27000,
+      "maneuverThrust": 98000,
+      "pitchRate": 1.45,
+      "yawRate": 1.3,
+      "rollRate": 2.4,
+      "cruiseSpeed": 55.05,
+      "hullRadius": 20
+    },
+    // M5.
+    {
+      "id": "argon_discoverer",
+      "name": "Argon Discoverer",
+      "xbtfBodyId": 3,
+      "xbtfTextId": 3151,
+      "class": "M5",
+      "speed": 36.67,
+      "acceleration": 3.15,
+      "steeringPitch": 0.2,
+      "steeringYaw": 0.25,
+      "steeringRoll": 0.25,
+      "power": 100,
+      // ours
+      "mass": 8000,
+      "mainThrust": 25000,
+      "maneuverThrust": 90000,
+      "pitchRate": 1.6,
+      "yawRate": 1.4,
+      "rollRate": 2.6,
+      "cruiseSpeed": 36.67,
+      "hullRadius": 17
+    },
+    // --- Boron -------------------------------------------------------------------------------------
+    // TL.
+    {
+      "id": "boron_orca",
+      "name": "Boron Orca",
+      "xbtfBodyId": 135,
+      "xbtfTextId": 3261,
+      "class": "TL",
+      "speed": 54.77,
+      "acceleration": 5.54,
+      "steeringPitch": 0.003,
+      "steeringYaw": 0.003,
+      "steeringRoll": 0.003,
+      "power": 1000,
+      // ours
+      "mass": 600000,
+      "mainThrust": 3320000,
+      "maneuverThrust": 940000,
+      "pitchRate": 0.22,
+      "yawRate": 0.2,
+      "rollRate": 0.28,
+      "cruiseSpeed": 54.77,
+      "hullRadius": 160
+    },
+    // TS.
+    {
+      "id": "boron_dolphin",
+      "name": "Boron Dolphin",
+      "xbtfBodyId": 141,
+      "xbtfTextId": 3271,
+      "class": "TS",
+      "speed": 46.47,
+      "acceleration": 1.49,
+      "steeringPitch": 0.005,
+      "steeringYaw": 0.005,
+      "steeringRoll": 0.001,
+      "power": 100,
+      // ours
+      "mass": 90000,
+      "mainThrust": 134000,
+      "maneuverThrust": 189000,
+      "pitchRate": 0.56,
+      "yawRate": 0.5,
+      "rollRate": 0.78,
+      "cruiseSpeed": 46.47,
+      "hullRadius": 55
+    },
+    // M1.
+    {
+      "id": "boron_shark",
+      "name": "Boron Shark",
+      "xbtfBodyId": 123,
+      "xbtfTextId": 3211,
+      "class": "M1",
+      "speed": 23.24,
+      "acceleration": 0.37,
+      "steeringPitch": 0.001,
+      "steeringYaw": 0.005,
+      "steeringRoll": 0.002,
+      "power": 1000,
+      // ours
+      "mass": 2000000,
+      "mainThrust": 740000,
+      "maneuverThrust": 3150000,
+      "pitchRate": 0.13,
+      "yawRate": 0.11,
+      "rollRate": 0.17,
+      "cruiseSpeed": 23.24,
+      "hullRadius": 300
+    },
+    // M2.
+    {
+      "id": "boron_ray",
+      "name": "Boron Ray",
+      "xbtfBodyId": 134,
+      "xbtfTextId": 3221,
+      "class": "M2",
+      "speed": 153.87,
+      "acceleration": 32.57,
+      "steeringPitch": 0.01,
+      "steeringYaw": 0.001,
+      "steeringRoll": 0.01,
+      "power": 1000,
+      // ours
+      "mass": 1200000,
+      "mainThrust": 39080000,
+      "maneuverThrust": 2520000,
+      "pitchRate": 0.17,
+      "yawRate": 0.15,
+      "rollRate": 0.22,
+      "cruiseSpeed": 153.87,
+      "hullRadius": 220
+    },
+    // M3.
+    {
+      "id": "boron_eel",
+      "name": "Boron Eel",
+      "xbtfBodyId": 20,
+      "xbtfTextId": 3231,
+      "class": "M3",
+      "speed": 68.29,
+      "acceleration": 2.84,
+      "steeringPitch": 0.205,
+      "steeringYaw": 0.205,
+      "steeringRoll": 0.205,
+      "power": 100,
+      // ours
+      "mass": 12000,
+      "mainThrust": 34000,
+      "maneuverThrust": 110000,
+      "pitchRate": 1.46,
+      "yawRate": 1.29,
+      "rollRate": 2.46,
+      "cruiseSpeed": 68.29,
+      "hullRadius": 24
+    },
+    // M4.
+    {
+      "id": "boron_piranha",
+      "name": "Boron Piranha",
+      "xbtfBodyId": 142,
+      "xbtfTextId": 3241,
+      "class": "M4",
+      "speed": 54.77,
+      "acceleration": 2.84,
+      "steeringPitch": 0.5,
+      "steeringYaw": 0.5,
+      "steeringRoll": 0.5,
+      "power": 100,
+      // ours
+      "mass": 10000,
+      "mainThrust": 28000,
+      "maneuverThrust": 103000,
+      "pitchRate": 1.62,
+      "yawRate": 1.46,
+      "rollRate": 2.69,
+      "cruiseSpeed": 54.77,
+      "hullRadius": 20
+    },
+    // M5.
+    {
+      "id": "boron_octopus",
+      "name": "Boron Octopus",
+      "xbtfBodyId": 4,
+      "xbtfTextId": 3251,
+      "class": "M5",
+      "speed": 68.29,
+      "acceleration": 14.86,
+      "steeringPitch": 0.205,
+      "steeringYaw": 0.905,
+      "steeringRoll": 0.9,
+      "power": 100,
+      // ours
+      "mass": 8000,
+      "mainThrust": 119000,
+      "maneuverThrust": 94000,
+      "pitchRate": 1.79,
+      "yawRate": 1.57,
+      "rollRate": 2.91,
+      "cruiseSpeed": 68.29,
+      "hullRadius": 17
+    },
+    // --- Split -------------------------------------------------------------------------------------
+    // TL.
+    {
+      "id": "split_elephant",
+      "name": "Split Elephant",
+      "xbtfBodyId": 110,
+      "xbtfTextId": 3361,
+      "class": "TL",
+      "speed": 56.85,
+      "acceleration": 5.45,
+      "steeringPitch": 0.003,
+      "steeringYaw": 0.003,
+      "steeringRoll": 0.004,
+      "power": 1000,
+      // ours
+      "mass": 540000,
+      "mainThrust": 2940000,
+      "maneuverThrust": 900000,
+      "pitchRate": 0.21,
+      "yawRate": 0.19,
+      "rollRate": 0.26,
+      "cruiseSpeed": 56.85,
+      "hullRadius": 152
+    },
+    // TS.
+    {
+      "id": "split_mule",
+      "name": "Split Mule",
+      "xbtfBodyId": 117,
+      "xbtfTextId": 3371,
+      "class": "TS",
+      "speed": 48.65,
+      "acceleration": 1.4,
+      "steeringPitch": 0.01,
+      "steeringYaw": 0.01,
+      "steeringRoll": 0.01,
+      "power": 100,
+      // ours
+      "mass": 81000,
+      "mainThrust": 113000,
+      "maneuverThrust": 180000,
+      "pitchRate": 0.53,
+      "yawRate": 0.47,
+      "rollRate": 0.73,
+      "cruiseSpeed": 48.65,
+      "hullRadius": 52
+    },
+    // M1.
+    {
+      "id": "split_raptor",
+      "name": "Split Raptor",
+      "xbtfBodyId": 121,
+      "xbtfTextId": 3311,
+      "class": "M1",
+      "speed": 24.37,
+      "acceleration": 0.36,
+      "steeringPitch": 0.001,
+      "steeringYaw": 0.005,
+      "steeringRoll": 0.002,
+      "power": 1000,
+      // ours
+      "mass": 1800000,
+      "mainThrust": 650000,
+      "maneuverThrust": 3000000,
+      "pitchRate": 0.13,
+      "yawRate": 0.11,
+      "rollRate": 0.16,
+      "cruiseSpeed": 24.37,
+      "hullRadius": 285
+    },
+    // M2.
+    {
+      "id": "split_python",
+      "name": "Split Python",
+      "xbtfBodyId": 133,
+      "xbtfTextId": 3321,
+      "class": "M2",
+      "speed": 60.41,
+      "acceleration": 9.95,
+      "steeringPitch": 0.01,
+      "steeringYaw": 0.001,
+      "steeringRoll": 0.01,
+      "power": 1000,
+      // ours
+      "mass": 1080000,
+      "mainThrust": 10750000,
+      "maneuverThrust": 2400000,
+      "pitchRate": 0.16,
+      "yawRate": 0.14,
+      "rollRate": 0.21,
+      "cruiseSpeed": 60.41,
+      "hullRadius": 209
+    },
+    // M3.
+    {
+      "id": "split_mamba",
+      "name": "Split Mamba",
+      "xbtfBodyId": 126,
+      "xbtfTextId": 3331,
+      "class": "M3",
+      "speed": 69.41,
+      "acceleration": 6.8,
+      "steeringPitch": 0.25,
+      "steeringYaw": 0.25,
+      "steeringRoll": 0.25,
+      "power": 100,
+      // ours
+      "mass": 10800,
+      "mainThrust": 73000,
+      "maneuverThrust": 105000,
+      "pitchRate": 1.37,
+      "yawRate": 1.21,
+      "rollRate": 2.31,
+      "cruiseSpeed": 69.41,
+      "hullRadius": 23
+    },
+    // M4.
+    {
+      "id": "split_scorpion",
+      "name": "Split Scorpion",
+      "xbtfBodyId": 137,
+      "xbtfTextId": 3341,
+      "class": "M4",
+      "speed": 29.91,
+      "acceleration": 2.75,
+      "steeringPitch": 0.5,
+      "steeringYaw": 0.7,
+      "steeringRoll": 0.5,
+      "power": 100,
+      // ours
+      "mass": 9000,
+      "mainThrust": 25000,
+      "maneuverThrust": 98000,
+      "pitchRate": 1.52,
+      "yawRate": 1.37,
+      "rollRate": 2.52,
+      "cruiseSpeed": 29.91,
+      "hullRadius": 19
+    },
+    // M5.
+    {
+      "id": "split_wolf",
+      "name": "Split Wolf",
+      "xbtfBodyId": 52,
+      "xbtfTextId": 3351,
+      "class": "M5",
+      "speed": 64.91,
+      "acceleration": 6.35,
+      "steeringPitch": 0.25,
+      "steeringYaw": 0.35,
+      "steeringRoll": 0.35,
+      "power": 100,
+      // ours
+      "mass": 7200,
+      "mainThrust": 46000,
+      "maneuverThrust": 90000,
+      "pitchRate": 1.68,
+      "yawRate": 1.47,
+      "rollRate": 2.73,
+      "cruiseSpeed": 64.91,
+      "hullRadius": 16
+    },
+    // --- Paranid -----------------------------------------------------------------------------------
+    // TL.
+    {
+      "id": "paranid_hercules",
+      "name": "Paranid Hercules",
+      "xbtfBodyId": 129,
+      "xbtfTextId": 3461,
+      "class": "TL",
+      "speed": 57.25,
+      "acceleration": 5.5,
+      "steeringPitch": 0.003,
+      "steeringYaw": 0.003,
+      "steeringRoll": 0.003,
+      "power": 1000,
+      // ours
+      "mass": 660000,
+      "mainThrust": 3630000,
+      "maneuverThrust": 990000,
+      "pitchRate": 0.19,
+      "yawRate": 0.17,
+      "rollRate": 0.24,
+      "cruiseSpeed": 57.25,
+      "hullRadius": 168
+    },
+    // TS.
+    {
+      "id": "paranid_ganymede",
+      "name": "Paranid Ganymede",
+      "xbtfBodyId": 139,
+      "xbtfTextId": 3471,
+      "class": "TS",
+      "speed": 48.45,
+      "acceleration": 1.44,
+      "steeringPitch": 0.01,
+      "steeringYaw": 0.01,
+      "steeringRoll": 0.001,
+      "power": 100,
+      // ours
+      "mass": 99000,
+      "mainThrust": 143000,
+      "maneuverThrust": 198000,
+      "pitchRate": 0.47,
+      "yawRate": 0.43,
+      "rollRate": 0.66,
+      "cruiseSpeed": 48.45,
+      "hullRadius": 58
+    },
+    // M1.
+    {
+      "id": "paranid_zeus",
+      "name": "Paranid Zeus",
+      "xbtfBodyId": 192,
+      "xbtfTextId": 3411,
+      "class": "M1",
+      "speed": 25.72,
+      "acceleration": 0.37,
+      "steeringPitch": 0.001,
+      "steeringYaw": 0.005,
+      "steeringRoll": 0.002,
+      "power": 1000,
+      // ours
+      "mass": 2200000,
+      "mainThrust": 810000,
+      "maneuverThrust": 3300000,
+      "pitchRate": 0.11,
+      "yawRate": 0.1,
+      "rollRate": 0.14,
+      "cruiseSpeed": 25.72,
+      "hullRadius": 315
+    },
+    // M2.
+    {
+      "id": "paranid_odysseus",
+      "name": "Paranid Odysseus",
+      "xbtfBodyId": 125,
+      "xbtfTextId": 3421,
+      "class": "M2",
+      "speed": 133.83,
+      "acceleration": 23.51,
+      "steeringPitch": 0.01,
+      "steeringYaw": 0.001,
+      "steeringRoll": 0.01,
+      "power": 1000,
+      // ours
+      "mass": 1320000,
+      "mainThrust": 31030000,
+      "maneuverThrust": 2640000,
+      "pitchRate": 0.14,
+      "yawRate": 0.12,
+      "rollRate": 0.19,
+      "cruiseSpeed": 133.83,
+      "hullRadius": 231
+    },
+    // M3.
+    {
+      "id": "paranid_prometheus",
+      "name": "Paranid Prometheus",
+      "xbtfBodyId": 130,
+      "xbtfTextId": 3431,
+      "class": "M3",
+      "speed": 70.77,
+      "acceleration": 2.79,
+      "steeringPitch": 0.205,
+      "steeringYaw": 0.205,
+      "steeringRoll": 0.205,
+      "power": 100,
+      // ours
+      "mass": 13200,
+      "mainThrust": 37000,
+      "maneuverThrust": 116000,
+      "pitchRate": 1.23,
+      "yawRate": 1.09,
+      "rollRate": 2.09,
+      "cruiseSpeed": 70.77,
+      "hullRadius": 25
+    },
+    // M4.
+    {
+      "id": "paranid_poseidon",
+      "name": "Paranid Poseidon",
+      "xbtfBodyId": 115,
+      "xbtfTextId": 3441,
+      "class": "M4",
+      "speed": 57.25,
+      "acceleration": 2.79,
+      "steeringPitch": 0.5,
+      "steeringYaw": 0.5,
+      "steeringRoll": 0.5,
+      "power": 100,
+      // ours
+      "mass": 11000,
+      "mainThrust": 31000,
+      "maneuverThrust": 108000,
+      "pitchRate": 1.38,
+      "yawRate": 1.23,
+      "rollRate": 2.28,
+      "cruiseSpeed": 57.25,
+      "hullRadius": 21
+    },
+    // M5.
+    {
+      "id": "paranid_pegasus",
+      "name": "Paranid Pegasus",
+      "xbtfBodyId": 18,
+      "xbtfTextId": 3451,
+      "class": "M5",
+      "speed": 70.77,
+      "acceleration": 18.92,
+      "steeringPitch": 0.205,
+      "steeringYaw": 0.605,
+      "steeringRoll": 0.5,
+      "power": 100,
+      // ours
+      "mass": 8800,
+      "mainThrust": 166000,
+      "maneuverThrust": 99000,
+      "pitchRate": 1.52,
+      "yawRate": 1.33,
+      "rollRate": 2.47,
+      "cruiseSpeed": 70.77,
+      "hullRadius": 18
+    },
+    // --- Teladi ------------------------------------------------------------------------------------
+    // TL.
+    {
+      "id": "teladi_albatross",
+      "name": "Teladi Albatross",
+      "xbtfBodyId": 187,
+      "xbtfTextId": 3561,
+      "class": "TL",
+      "speed": 58.02,
+      "acceleration": 5.81,
+      "steeringPitch": 0.005,
+      "steeringYaw": 0.005,
+      "steeringRoll": 0.001,
+      "power": 1000,
+      // ours
+      "mass": 700000,
+      "mainThrust": 4070000,
+      "maneuverThrust": 820000,
+      "pitchRate": 0.17,
+      "yawRate": 0.15,
+      "rollRate": 0.21,
+      "cruiseSpeed": 58.02,
+      "hullRadius": 154
+    },
+    // TS.
+    {
+      "id": "teladi_vulture",
+      "name": "Teladi Vulture",
+      "xbtfBodyId": 7,
+      "xbtfTextId": 3571,
+      "class": "TS",
+      "speed": 49.5,
+      "acceleration": 2.21,
+      "steeringPitch": 0.005,
+      "steeringYaw": 0.005,
+      "steeringRoll": 0.001,
+      "power": 100,
+      // ours
+      "mass": 105000,
+      "mainThrust": 232000,
+      "maneuverThrust": 165000,
+      "pitchRate": 0.42,
+      "yawRate": 0.38,
+      "rollRate": 0.59,
+      "cruiseSpeed": 49.5,
+      "hullRadius": 53
+    },
+    // M1.
+    {
+      "id": "teladi_condor",
+      "name": "Teladi Condor",
+      "xbtfBodyId": 104,
+      "xbtfTextId": 3511,
+      "class": "M1",
+      "speed": 26.49,
+      "acceleration": 0.4,
+      "steeringPitch": 0.001,
+      "steeringYaw": 0.005,
+      "steeringRoll": 0.002,
+      "power": 1000,
+      // ours
+      "mass": 2330000,
+      "mainThrust": 930000,
+      "maneuverThrust": 2740000,
+      "pitchRate": 0.1,
+      "yawRate": 0.09,
+      "rollRate": 0.13,
+      "cruiseSpeed": 26.49,
+      "hullRadius": 288
+    },
+    // M2.
+    {
+      "id": "teladi_phoenix",
+      "name": "Teladi Phoenix",
+      "xbtfBodyId": 140,
+      "xbtfTextId": 3521,
+      "class": "M2",
+      "speed": 62.52,
+      "acceleration": 14.82,
+      "steeringPitch": 0.01,
+      "steeringYaw": 0.001,
+      "steeringRoll": 0.01,
+      "power": 1000,
+      // ours
+      "mass": 1400000,
+      "mainThrust": 20750000,
+      "maneuverThrust": 2200000,
+      "pitchRate": 0.13,
+      "yawRate": 0.11,
+      "rollRate": 0.17,
+      "cruiseSpeed": 62.52,
+      "hullRadius": 211
+    },
+    // M3.
+    {
+      "id": "teladi_falcon",
+      "name": "Teladi Falcon",
+      "xbtfBodyId": 17,
+      "xbtfTextId": 3531,
+      "class": "M3",
+      "speed": 71.53,
+      "acceleration": 3.11,
+      "steeringPitch": 0.205,
+      "steeringYaw": 0.205,
+      "steeringRoll": 0.255,
+      "power": 100,
+      // ours
+      "mass": 14000,
+      "mainThrust": 44000,
+      "maneuverThrust": 96000,
+      "pitchRate": 1.1,
+      "yawRate": 0.98,
+      "rollRate": 1.87,
+      "cruiseSpeed": 71.53,
+      "hullRadius": 23
+    },
+    // M4.
+    {
+      "id": "teladi_hawk",
+      "name": "Teladi Hawk",
+      "xbtfBodyId": 138,
+      "xbtfTextId": 3541,
+      "class": "M4",
+      "speed": 58.02,
+      "acceleration": 3.11,
+      "steeringPitch": 0.4,
+      "steeringYaw": 0.3,
+      "steeringRoll": 0.5,
+      "power": 100,
+      // ours
+      "mass": 11700,
+      "mainThrust": 36000,
+      "maneuverThrust": 90000,
+      "pitchRate": 1.23,
+      "yawRate": 1.1,
+      "rollRate": 2.04,
+      "cruiseSpeed": 58.02,
+      "hullRadius": 19
+    },
+    // M5.
+    {
+      "id": "teladi_bat",
+      "name": "Teladi Bat",
+      "xbtfBodyId": 128,
+      "xbtfTextId": 3551,
+      "class": "M5",
+      "speed": 40,
+      "acceleration": 3.56,
+      "steeringPitch": 0.205,
+      "steeringYaw": 0.205,
+      "steeringRoll": 0.3,
+      "power": 100,
+      // ours
+      "mass": 9300,
+      "mainThrust": 33000,
+      "maneuverThrust": 82000,
+      "pitchRate": 1.36,
+      "yawRate": 1.19,
+      "rollRate": 2.21,
+      "cruiseSpeed": 40,
+      "hullRadius": 16
+    },
+    // --- Xenon -------------------------------------------------------------------------------------
+    // TL.
+    {
+      "id": "xenon_tt",
+      "name": "Xenon TT",
+      "xbtfBodyId": 38,
+      "xbtfTextId": 3661,
+      "class": "TL",
+      "speed": 55.86,
+      "acceleration": 5.63,
+      "steeringPitch": 0.001,
+      "steeringYaw": 0.0055,
+      "steeringRoll": 0.0055,
+      "power": 1000,
+      // ours
+      "mass": 570000,
+      "mainThrust": 3210000,
+      "maneuverThrust": 990000,
+      "pitchRate": 0.22,
+      "yawRate": 0.2,
+      "rollRate": 0.28,
+      "cruiseSpeed": 55.86,
+      "hullRadius": 160
+    },
+    // TS.
+    {
+      "id": "xenon_ts",
+      "name": "Xenon Transporter",
+      "xbtfBodyId": 189,
+      "xbtfTextId": 3671,
+      "class": "TS",
+      "speed": 48.24,
+      "acceleration": 1.58,
+      "steeringPitch": 0.001,
+      "steeringYaw": 0.01,
+      "steeringRoll": 0.025,
+      "power": 100,
+      // ours
+      "mass": 85500,
+      "mainThrust": 135000,
+      "maneuverThrust": 198000,
+      "pitchRate": 0.55,
+      "yawRate": 0.5,
+      "rollRate": 0.77,
+      "cruiseSpeed": 48.24,
+      "hullRadius": 55
+    },
+    // M0. XBTF's text calls every Xenon ship "Unknown Xenon Ship"; the names are ours, J and K from later X games.
+    {
+      "id": "xenon_mother",
+      "name": "Xenon Mother",
+      "xbtfBodyId": 21,
+      "xbtfTextId": 3601,
+      "class": "M0",
+      "speed": 9.46,
+      "acceleration": 0.25,
+      "steeringPitch": 0.001,
+      "steeringYaw": 0.0025,
+      "steeringRoll": 0.0025,
+      "power": 1000,
+      // ours
+      "mass": 2850000,
+      "mainThrust": 710000,
+      "maneuverThrust": 4400000,
+      "pitchRate": 0.09,
+      "yawRate": 0.08,
+      "rollRate": 0.11,
+      "cruiseSpeed": 9.46,
+      "hullRadius": 400
+    },
+    // M1.
+    {
+      "id": "xenon_j",
+      "name": "Xenon J",
+      "xbtfBodyId": 119,
+      "xbtfTextId": 3611,
+      "class": "M1",
+      "speed": 14.14,
+      "acceleration": 0.38,
+      "steeringPitch": 0.0025,
+      "steeringYaw": 0.001,
+      "steeringRoll": 0.0055,
+      "power": 1000,
+      // ours
+      "mass": 1900000,
+      "mainThrust": 720000,
+      "maneuverThrust": 3300000,
+      "pitchRate": 0.13,
+      "yawRate": 0.11,
+      "rollRate": 0.17,
+      "cruiseSpeed": 14.14,
+      "hullRadius": 300
+    },
+    // M2.
+    {
+      "id": "xenon_k",
+      "name": "Xenon K",
+      "xbtfBodyId": 118,
+      "xbtfTextId": 3621,
+      "class": "M2",
+      "speed": 158.78,
+      "acceleration": 28.15,
+      "steeringPitch": 0.001,
+      "steeringYaw": 0.015,
+      "steeringRoll": 0.015,
+      "power": 1000,
+      // ours
+      "mass": 1140000,
+      "mainThrust": 32090000,
+      "maneuverThrust": 2640000,
+      "pitchRate": 0.17,
+      "yawRate": 0.14,
+      "rollRate": 0.22,
+      "cruiseSpeed": 158.78,
+      "hullRadius": 220
+    },
+    // M3.
+    {
+      "id": "xenon_l",
+      "name": "Xenon L",
+      "xbtfBodyId": 16,
+      "xbtfTextId": 3631,
+      "class": "M3",
+      "speed": 52.16,
+      "acceleration": 7.43,
+      "steeringPitch": 0.555,
+      "steeringYaw": 0.355,
+      "steeringRoll": 0.205,
+      "power": 100,
+      // ours
+      "mass": 11400,
+      "mainThrust": 85000,
+      "maneuverThrust": 116000,
+      "pitchRate": 1.43,
+      "yawRate": 1.26,
+      "rollRate": 2.42,
+      "cruiseSpeed": 52.16,
+      "hullRadius": 24
+    },
+    // M4.
+    {
+      "id": "xenon_m",
+      "name": "Xenon M",
+      "xbtfBodyId": 5,
+      "xbtfTextId": 3641,
+      "class": "M4",
+      "speed": 64.5,
+      "acceleration": 11.94,
+      "steeringPitch": 0.55,
+      "steeringYaw": 0.5,
+      "steeringRoll": 0.5,
+      "power": 100,
+      // ours
+      "mass": 9500,
+      "mainThrust": 113000,
+      "maneuverThrust": 108000,
+      "pitchRate": 1.59,
+      "yawRate": 1.43,
+      "rollRate": 2.64,
+      "cruiseSpeed": 64.5,
+      "hullRadius": 20
+    },
+    // M5.
+    {
+      "id": "xenon_n",
+      "name": "Xenon N",
+      "xbtfBodyId": 9,
+      "xbtfTextId": 3651,
+      "class": "M5",
+      "speed": 47.79,
+      "acceleration": 16.89,
+      "steeringPitch": 0.555,
+      "steeringYaw": 0.355,
+      "steeringRoll": 0.205,
+      "power": 100,
+      // ours
+      "mass": 7600,
+      "mainThrust": 128000,
+      "maneuverThrust": 99000,
+      "pitchRate": 1.76,
+      "yawRate": 1.54,
+      "rollRate": 2.86,
+      "cruiseSpeed": 47.79,
+      "hullRadius": 17
+    },
+    // --- Pirates -----------------------------------------------------------------------------------
+    // TS.
+    {
+      "id": "pirate_argon_freighter",
+      "name": "Pirate Argon Freighter",
+      "xbtfBodyId": 391,
+      "xbtfTextId": 3771,
+      "class": "TS",
+      "speed": 56.31,
+      "acceleration": 3.65,
+      "steeringPitch": 0.03,
+      "steeringYaw": 0.03,
+      "steeringRoll": 0.005,
+      "power": 100,
+      // ours
+      "mass": 85500,
+      "mainThrust": 312000,
+      "maneuverThrust": 180000,
+      "pitchRate": 0.53,
+      "yawRate": 0.47,
+      "rollRate": 0.73,
+      "cruiseSpeed": 56.31,
+      "hullRadius": 55
+    },
+    // TS.
+    {
+      "id": "pirate_xenon_freighter",
+      "name": "Pirate Xenon Freighter",
+      "xbtfBodyId": 396,
+      "xbtfTextId": 3771,
+      "class": "TS",
+      "speed": 58.11,
+      "acceleration": 3.69,
+      "steeringPitch": 0.001,
+      "steeringYaw": 0.03,
+      "steeringRoll": 0.04,
+      "power": 100,
+      // ours
+      "mass": 85500,
+      "mainThrust": 315000,
+      "maneuverThrust": 180000,
+      "pitchRate": 0.53,
+      "yawRate": 0.47,
+      "rollRate": 0.73,
+      "cruiseSpeed": 58.11,
+      "hullRadius": 55
+    },
+    // TS.
+    {
+      "id": "pirate_split_freighter",
+      "name": "Pirate Split Freighter",
+      "xbtfBodyId": 394,
+      "xbtfTextId": 3771,
+      "class": "TS",
+      "speed": 57.21,
+      "acceleration": 3.74,
+      "steeringPitch": 0.03,
+      "steeringYaw": 0.03,
+      "steeringRoll": 0.03,
+      "power": 100,
+      // ours
+      "mass": 85500,
+      "mainThrust": 320000,
+      "maneuverThrust": 180000,
+      "pitchRate": 0.53,
+      "yawRate": 0.47,
+      "rollRate": 0.73,
+      "cruiseSpeed": 57.21,
+      "hullRadius": 55
+    },
+    // TS.
+    {
+      "id": "pirate_paranid_freighter",
+      "name": "Pirate Paranid Freighter",
+      "xbtfBodyId": 393,
+      "xbtfTextId": 3771,
+      "class": "TS",
+      "speed": 56.49,
+      "acceleration": 3.78,
+      "steeringPitch": 0.03,
+      "steeringYaw": 0.03,
+      "steeringRoll": 0.001,
+      "power": 100,
+      // ours
+      "mass": 85500,
+      "mainThrust": 323000,
+      "maneuverThrust": 180000,
+      "pitchRate": 0.53,
+      "yawRate": 0.47,
+      "rollRate": 0.73,
+      "cruiseSpeed": 56.49,
+      "hullRadius": 55
+    },
+    // TS.
+    {
+      "id": "pirate_boron_freighter",
+      "name": "Pirate Boron Freighter",
+      "xbtfBodyId": 392,
+      "xbtfTextId": 3771,
+      "class": "TS",
+      "speed": 54.5,
+      "acceleration": 3.83,
+      "steeringPitch": 0.025,
+      "steeringYaw": 0.025,
+      "steeringRoll": 0.001,
+      "power": 100,
+      // ours
+      "mass": 85500,
+      "mainThrust": 327000,
+      "maneuverThrust": 180000,
+      "pitchRate": 0.53,
+      "yawRate": 0.47,
+      "rollRate": 0.73,
+      "cruiseSpeed": 54.5,
+      "hullRadius": 55
+    },
+    // TS.
+    {
+      "id": "pirate_teladi_freighter",
+      "name": "Pirate Teladi Freighter",
+      "xbtfBodyId": 395,
+      "xbtfTextId": 3771,
+      "class": "TS",
+      "speed": 54.95,
+      "acceleration": 3.87,
+      "steeringPitch": 0.025,
+      "steeringYaw": 0.025,
+      "steeringRoll": 0.001,
+      "power": 100,
+      // ours
+      "mass": 85500,
+      "mainThrust": 331000,
+      "maneuverThrust": 180000,
+      "pitchRate": 0.53,
+      "yawRate": 0.47,
+      "rollRate": 0.73,
+      "cruiseSpeed": 54.95,
+      "hullRadius": 55
+    },
+    // --- Others ------------------------------------------------------------------------------------
+    // M3. The player's ship. The table files it under "Unknown Object" (3751), so it has no
+    // name or description of its own; body 124 is titled "Xperimental Lovley Angel".
+    // XBTF's table carries no tunings: speedMax and rudderTunings are the in-game figures from
+    // elite-games.ru's XBTF FAQ (54.05 m/s, 216.21 with 30 engine tunings).
+    {
+      "id": "xperimental",
+      "name": "Xperimental Shuttle",
+      "xbtfBodyId": 124,
+      "xbtfTextId": 3751,
+      "class": "M3",
+      "speed": 54.05,
+      "acceleration": 3.6,
+      "steeringPitch": 0.3,
+      "steeringYaw": 0.2,
+      "steeringRoll": 0.5,
+      "power": 100,
+      "speedMax": 216.21,
+      "rudderTunings": 30,
+      // ours
+      "mass": 12000,
+      "mainThrust": 43000,
+      "maneuverThrust": 105000,
+      "pitchRate": 1.3,
+      "yawRate": 1.15,
+      "rollRate": 2.2,
+      "cruiseSpeed": 54.05,
+      "hullRadius": 24
+    },
+    // Goner. Filed under "Unknown Object" (3751); body 41 is titled "Gonership".
+    {
+      "id": "goner_ship",
+      "name": "Goner Ship",
+      "xbtfBodyId": 41,
+      "xbtfTextId": 3751,
+      "class": "Goner",
+      "speed": 54.05,
+      "acceleration": 3.6,
+      "steeringPitch": 0.3,
+      "steeringYaw": 0.2,
+      "steeringRoll": 0.5,
+      "power": 100,
+      // ours
+      "mass": 90000,
+      "mainThrust": 324000,
+      "maneuverThrust": 180000,
+      "pitchRate": 0.5,
+      "yawRate": 0.45,
+      "rollRate": 0.7,
+      "cruiseSpeed": 54.05,
+      "hullRadius": 55
+    }
+  ]
+}

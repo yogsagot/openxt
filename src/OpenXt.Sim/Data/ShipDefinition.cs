@@ -50,6 +50,58 @@ public sealed record ShipDefinition
 
     /// <summary>Text id in the archive's language tables; the description is conventionally id + 1.</summary>
     public int XbtfTextId { get; set; } = -1;
+
+    // The original game's figures: the ship table in its executable (`openxt-import ships`), plus
+    // prices from elite-games.ru's database, which the executable's table does not hold.
+    // Null means the game does not say: XBTF's table stops at speed and acceleration, and a mod's
+    // own ship need not have any. The flight model reads none of these directly — cruiseSpeed and
+    // mainThrust above are derived from them in the data, so the feel stays tunable there.
+
+    /// <summary>TL, TS, M0-M5, Pirate or Goner.</summary>
+    public string? Class { get; set; }
+
+    /// <summary>Base top speed, metres per second.</summary>
+    public float? Speed { get; set; }
+
+    /// <summary>Top speed with every engine tuning fitted, metres per second.</summary>
+    public float? SpeedMax { get; set; }
+
+    /// <summary>Metres per second squared.</summary>
+    public float? Acceleration { get; set; }
+
+    /// <summary>
+    /// Steering as the game stores it (16.16 fixed, converted). How the info screen's "max turn"
+    /// percentage is derived from these is not established.
+    /// </summary>
+    public float? SteeringPitch { get; set; }
+    public float? SteeringYaw { get; set; }
+    public float? SteeringRoll { get; set; }
+
+    public int? RudderTunings { get; set; }
+    public int? Hull { get; set; }
+
+    /// <summary>Cargo bay as built and fully extended, in cargo units.</summary>
+    public int? Cargo { get; set; }
+    public int? CargoMax { get; set; }
+
+    /// <summary>Power generator output, MW.</summary>
+    public int? Power { get; set; }
+
+    /// <summary>
+    /// The most the ship can mount: how many lasers and shields, and the best laser, shield and
+    /// missile it accepts. Types name wares (e.g. <c>gamma_pac</c>, <c>shield_25mw</c>, <c>hornet</c>).
+    /// </summary>
+    public int? LaserMounts { get; set; }
+    public string? MaxLaser { get; set; }
+    public int? ShieldMounts { get; set; }
+    public string? MaxShield { get; set; }
+    public string? MaxMissile { get; set; }
+    public int? MissileCount { get; set; }
+
+    /// <summary>Shipyard price in credits for the S, M and L variants, where the ship is sold.</summary>
+    public int? PriceS { get; set; }
+    public int? PriceM { get; set; }
+    public int? PriceL { get; set; }
 }
 
 public sealed record ShipCatalogFile

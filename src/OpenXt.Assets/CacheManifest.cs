@@ -19,8 +19,12 @@ namespace OpenXt.Assets;
 /// </summary>
 public sealed record CacheManifest
 {
-    /// <summary>Bumped whenever conversion output changes in a way that invalidates existing caches.</summary>
-    public const int CurrentImporterVersion = 1;
+    /// <summary>
+    /// Bumped whenever conversion output changes in a way that invalidates existing caches.
+    /// 2: caches from before v2 include some built by an early converter that negated Z, which
+    ///    draws every ship nose-first towards the chase camera; v2 forces them to be rebuilt.
+    /// </summary>
+    public const int CurrentImporterVersion = 2;
 
     public int ImporterVersion { get; set; } = CurrentImporterVersion;
     public int MeshVersion { get; set; } = OxMesh.CurrentVersion;

@@ -24,7 +24,8 @@ These came from the project owner and shape every technical choice:
 - **EGOSOFT data is copyrighted and never enters this repository.** The law requires the end user to own a legal copy
   of the original game to use its assets. So the player's own installation is the only source, an offline importer
   converts it into a local cache outside the working tree, and the engine must always run without that cache present.
-  No extracted mesh, texture, sound or string is ever committed, and no test may depend on one.
+  No extracted mesh, texture, sound or string is ever committed, and no test may depend on one. Ship statistics are
+  the exception, by the owner's ruling: they are facts about the game, not copyrighted assets, and are committed.
 
 ## Stack
 
@@ -102,8 +103,8 @@ openxt.slnx
 │   ├── Modding/                IGamePlugin, GameContext, GameRegistry
 │   ├── Rendering/              Camera, MeshRenderer, DebugShapeRenderer, ImGuiRenderer
 │   └── Debug/DebugOverlay.cs   dev overlay, F1 — sim window and package window
-├── games/xbtf, games/xtension  the two game packages: manifest + ruleset + content
-├── mods/openxt.ships-core      shared ship roster, a library package both games require
+├── games/xbtf, games/xtension  the two game packages: manifest + ruleset + ship roster, each
+│                               matched against its own archive; neither borrows the other's
 ├── samples/mods/…SampleMod     worked example of a third-party mod, and the template to copy
 ├── tools/OpenXt.XArchive       readers for EGOSOFT's .cat/.dat, PCK, body and text formats
 │                               format logic only — never any game data
@@ -164,14 +165,24 @@ which were established by decoding the real archives rather than from published 
 What is imported: models (`v/*.pbd`, text-format bodies with LODs), textures (`tex/true/*.jpg`, copied verbatim since
 MonoGame decodes them directly) and language tables (`t/44*.txt` English, `t/49*.txt` German).
 
-Two things to know before touching the pipeline:
+Three things to know before touching the pipeline:
 
-- **The archives contain no ship statistics.** XBTF predates the `types/` tables of X2 and later; speed, cargo, shields
-  and prices are compiled into `X.exe`. Everything in `mods/openxt.ships-core/data/ships/ships.json` except
-  `xbtfBodyId` and `xbtfTextId` is hand-authored by us and tuned by feel. Do not present those numbers as extracted.
+- **Ship statistics live in the executable, not the archives.** XBTF predates the `types/` tables of X2 and later;
+  `X.exe` and `X-TENSION.exe` each carry a compiled ship table, decoded by `ShipTable` and dumped by
+  `openxt-import ships --json`. In `games/*/data/ships/ships.json` everything above the `// ours` marker comes from
+  that table; mass, manoeuvring thrust, turn rates and hull radius below it are ours and tuned by feel. Speeds are
+  stored at 222 units per displayed m/s (`ShipTable.DisplayUnitsPerMetre`); the X-Tension manual prints raw values as
+  m/s and is wrong. XBTF's table has flight data and power only (no cargo, hull or equipment).
+  [elite-games.ru](https://www.elite-games.ru/x-tension/chapterships.shtml) is the cross-check: its X-Tension database
+  agrees with the decoded speed, cargo, power and equipment maxima for every ship, and it is the source of the prices,
+  which the executable does not hold. Hull, rudder tunings, missile count and what steering means remain unconfirmed.
 - **Scale is an anchor, not a measurement.** `MeshConverter.DefaultMetresPerUnit` is 1/500, which makes the Argon M3
   48 m. Bodies are not authored at a common scale — per-object scale lives in the scene files, which are not imported
   yet — so `openxt-import import --scale N` exists to correct it without a rebuild.
+- **Body ids come from the ship table.** Each record pairs a body id with a text id, and the two games pair them
+  differently (XBTF and X-Tension swap the M4/M5 hulls of Argon, Boron and Split, for one). Body titles in
+  `meshinfo` are developer working names and often wrong; never map ships by title or size, and never copy ids
+  from one roster to the other.
 
 Rules:
 
@@ -222,6 +233,7 @@ Rules:
   dotnet run --project tools/OpenXt.AssetImport -- verify           # decode everything, report failures
   dotnet run --project tools/OpenXt.AssetImport -- import           # populate the cache
   dotnet run --project tools/OpenXt.AssetImport -- meshinfo 0       # inspect a converted mesh, sizes in metres
+  dotnet run --project tools/OpenXt.AssetImport -- ships --json     # the executable's ship table
   ```
 
   Add `--game xbtf|xtension` to choose, or `--install <path>` to point at an installation directly. `ls` and

@@ -44,6 +44,8 @@ internal static class Cli
                 "verify" => WithInstall(rest, (install, _) => ArchiveCommands.Verify(install)),
                 "import" => WithInstall(rest, (install, _) =>
                     ImportCommand.Run(install, HasFlag(rest, "--force"), ReadScale(rest))),
+                "ships" => WithInstall(rest, (install, _) =>
+                    ShipCommands.Run(install, HasFlag(rest, "--json"))),
                 "meshinfo" => CacheCommands.MeshInfo(ReadOption(rest, "--game") ?? "xbtf", Positionals(rest)),
                 "where" => Where(),
                 _ => Fail($"unknown verb '{verb}'"),
@@ -186,6 +188,7 @@ internal static class Cli
               verify                      decode everything and report failures
               import [--force] [--scale N]  convert the archive into OpenXT's local asset cache
               meshinfo <bodyId>...        inspect converted meshes (sizes are in metres)
+              ships [--json]              dump the ship table compiled into the game executable
 
             Model verb:
               inspect <file>...           dump mesh statistics via Assimp

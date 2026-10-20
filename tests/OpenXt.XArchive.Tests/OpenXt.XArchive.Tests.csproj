@@ -23,6 +23,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\tools\OpenXt.XArchive\OpenXt.XArchive.csproj"/>
         <ProjectReference Include="..\..\src\OpenXt.Assets\OpenXt.Assets.csproj"/>
+        <ProjectReference Include="..\..\tools\OpenXt.AssetImport\OpenXt.AssetImport.csproj"/>
     </ItemGroup>
 
 </Project>

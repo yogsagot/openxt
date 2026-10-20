@@ -26,6 +26,19 @@ public sealed record XInstall(XGame Game, string Root)
 
     public CatArchive OpenArchive() => CatArchive.Open(CatPath);
 
+    /// <summary>The game executable, which holds the ship table; null if it is missing.</summary>
+    public string? ExePath
+    {
+        get
+        {
+            string wanted = Game == XGame.Tension ? "X-TENSION.exe" : "X.exe";
+            return Directory.Exists(Root)
+                ? Directory.EnumerateFiles(Root).FirstOrDefault(f =>
+                    string.Equals(Path.GetFileName(f), wanted, StringComparison.OrdinalIgnoreCase))
+                : null;
+        }
+    }
+
     /// <summary>
     /// Identifies an installation by its directory. Returns null if the directory holds no archive.
     /// The two games are told apart by their executable, falling back to the folder name.
