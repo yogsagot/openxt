@@ -91,7 +91,7 @@ openxt.slnx
 │   ├── Flight/FlightModel.cs   custom integrator — the feel lives here
 │   ├── Physics/                Bepu wrapper + narrow-phase / pose-integrator callbacks
 │   └── Data/                   ShipDefinition, ShipCatalog, StationDefinition, WareDefinition,
-│                               DefinitionCatalog, GameRuleset, ContentCatalogs,
+│                               SectorDefinition, DefinitionCatalog, GameRuleset, ContentCatalogs,
 │                               source-generated JSON context
 ├── src/OpenXt.Assets           the converted-asset format: .oxmesh, cache paths, manifest
 │                               shared by the game (reads) and the importer (writes), so the
@@ -101,9 +101,9 @@ openxt.slnx
 │   ├── LaunchOptions.cs        --game, --mods, --disable, --no-plugins, --list-mods
 │   ├── OpenXtGame.cs           the only place the two layers meet
 │   ├── Assets/                 AssetCache (async load, main-thread GPU upload), GpuMesh
-│   ├── Modding/                IGamePlugin, GameContext, GameRegistry
+│   ├── Modding/                IGamePlugin, GameContext, GameRegistry, CoreGamePlugin
 │   ├── Rendering/              Camera, MeshRenderer, DebugShapeRenderer, ImGuiRenderer
-│   └── Debug/DebugOverlay.cs   dev overlay, F1 — sim window and package window
+│   └── Debug/                  dev overlay, F1 — sim window, package window, sector map panel
 ├── games/xbtf, games/xtension  the two game packages: manifest + ruleset + ship roster, each
 │                               matched against its own archive; neither borrows the other's
 ├── samples/mods/…SampleMod     worked example of a third-party mod, and the template to copy
@@ -189,6 +189,10 @@ Three things to know before touching the pipeline:
   factory's product is its text id + 2. Race is not stored: `StationCommands` recovers it from names, per-race
   scene-id blocks and variant row order, and warns if they disagree. Production recipes, cycle times and all prices
   exist only for X-Tension, from elite-games.ru; XBTF has none.
+- **Sector cells come from the text tables; races and gates do not come from the games.** A sector's text id encodes
+  its cell (`2YX` in XBTF, `102YYXX` in X-Tension). Ownership and gates are set up by the compiled script
+  (`l/001.obj`, `STO2` bytecode, undecoded), so `games/*/data/sectors/sectors.json` reads them from elite-games.ru's
+  map images, and XBTF's stations per sector from its Excel map. Decoding the script would replace both.
 
 Rules:
 

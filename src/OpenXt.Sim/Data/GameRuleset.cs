@@ -43,7 +43,10 @@ public sealed record GameRuleset
     /// </summary>
     public string AssetKey { get; set; } = "";
 
-    /// <summary>Name of the sector the player starts in.</summary>
+    /// <summary>
+    /// Id of the sector the player starts in, from <c>sectors/sectors.json</c>. A game without a
+    /// map may give any name here; it is then used as the sector's name.
+    /// </summary>
     public string StartSector { get; set; } = "Unnamed Sector";
 
     /// <summary>Ship definition id the player flies at the start.</summary>

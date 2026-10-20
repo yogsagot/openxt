@@ -32,7 +32,9 @@ public static class SimBootstrap
         GameRuleset rules = ContentCatalogs.LoadRuleset(host.Content);
         DefinitionCatalog<StationDefinition> stations = ContentCatalogs.LoadStations(host.Content);
         DefinitionCatalog<WareDefinition> wares = ContentCatalogs.LoadWares(host.Content);
+        DefinitionCatalog<SectorDefinition> sectorMap = ContentCatalogs.LoadSectors(host.Content);
         CheckWareReferences(host, stations, wares);
+        CheckSectorMap(host, sectorMap, stations);
 
         SimRegistry registry = new(ships, rules);
 
@@ -59,7 +61,49 @@ public static class SimBootstrap
             }
         }
 
-        return new Universe(ships, rules, registry.Build(), stations, wares);
+        return new Universe(ships, rules, registry.Build(), stations, wares, sectorMap);
+    }
+
+    /// <summary>
+    /// The map's own consistency: one sector per cell, gates that lead to a sector and come back,
+    /// and stations that exist. Each mistake is reported, never thrown.
+    /// </summary>
+    private static void CheckSectorMap(
+        ModHost host, DefinitionCatalog<SectorDefinition> sectors, DefinitionCatalog<StationDefinition> stations)
+    {
+        string source = host.IsLoaded ? host.Game.Id : "(engine)";
+        Dictionary<(int, int), SectorDefinition> cells = [];
+
+        foreach (SectorDefinition sector in sectors.All)
+        {
+            if (!cells.TryAdd((sector.X, sector.Y), sector))
+                host.Diagnostics.Warning(source,
+                    $"sectors '{cells[(sector.X, sector.Y)].Id}' and '{sector.Id}' share cell ({sector.X},{sector.Y}).");
+        }
+
+        foreach (SectorDefinition sector in sectors.All)
+        {
+            foreach (string gate in sector.Gates)
+            {
+                if (SectorDefinition.Step(sector.X, sector.Y, gate) is not { } cell)
+                {
+                    host.Diagnostics.Warning(source, $"sector '{sector.Id}' has a gate '{gate}', which is not a direction.");
+                    continue;
+                }
+
+                if (!cells.TryGetValue(cell, out SectorDefinition? neighbour))
+                    host.Diagnostics.Warning(source, $"sector '{sector.Id}' has a {gate} gate into an empty cell.");
+                else if (!neighbour.Gates.Contains(SectorDefinition.Opposite(gate)!))
+                    host.Diagnostics.Warning(source,
+                        $"sector '{sector.Id}' has a {gate} gate to '{neighbour.Id}', which has none back.");
+            }
+
+            foreach (string station in sector.Stations ?? [])
+            {
+                if (!stations.Contains(station))
+                    host.Diagnostics.Warning(source, $"sector '{sector.Id}' places '{station}', which no package defines.");
+            }
+        }
     }
 
     /// <summary>
@@ -94,7 +138,7 @@ public static class SimBootstrap
         Universe universe = CreateUniverse(host);
         GameRuleset rules = universe.Rules;
 
-        Sector sector = universe.CreateSector(rules.StartSector);
+        Sector sector = universe.CreateSector(StartSectorName(host, universe));
 
         if (!universe.Ships.TryIndexOf(rules.PlayerShip, out _))
             throw new ModContentException(
@@ -123,6 +167,27 @@ public static class SimBootstrap
         }
 
         return new SimWorld(universe, sector, player);
+    }
+
+    /// <summary>
+    /// The ruleset names its start sector by map id. A game with no map uses the string as the
+    /// sector's name, as before maps existed; a map that lacks the id is reported and falls back
+    /// the same way.
+    /// </summary>
+    private static string StartSectorName(ModHost host, Universe universe)
+    {
+        string start = universe.Rules.StartSector;
+        DefinitionCatalog<SectorDefinition> map = universe.SectorMap;
+
+        if (map.TryIndexOf(start, out int index))
+            return map[index].Name;
+
+        if (map.Count > 0)
+            host.Diagnostics.Warning(
+                host.IsLoaded ? host.Game.Id : "(engine)",
+                $"the ruleset starts in '{start}', which is not a sector on the map.");
+
+        return start;
     }
 
     /// <summary>

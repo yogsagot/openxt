@@ -25,6 +25,12 @@ public sealed class Universe : IDisposable
 
     public DefinitionCatalog<WareDefinition> Wares { get; }
 
+    /// <summary>
+    /// The universe map: every sector the game defines, simulated or not. <see cref="Sectors"/> is
+    /// the other thing — the sectors currently running.
+    /// </summary>
+    public DefinitionCatalog<SectorDefinition> SectorMap { get; }
+
     /// <summary>The running game's rules and start state.</summary>
     public GameRuleset Rules { get; }
 
@@ -38,11 +44,13 @@ public sealed class Universe : IDisposable
         GameRuleset rules,
         SectorSystemPlan systems,
         DefinitionCatalog<StationDefinition>? stations = null,
-        DefinitionCatalog<WareDefinition>? wares = null)
+        DefinitionCatalog<WareDefinition>? wares = null,
+        DefinitionCatalog<SectorDefinition>? sectorMap = null)
     {
         Ships = ships;
         Stations = stations ?? DefinitionCatalog<StationDefinition>.Empty;
         Wares = wares ?? DefinitionCatalog<WareDefinition>.Empty;
+        SectorMap = sectorMap ?? DefinitionCatalog<SectorDefinition>.Empty;
         Rules = rules;
         Systems = systems;
     }

@@ -108,6 +108,7 @@ Current content paths:
 | `rules/ruleset.json` | The game's rules and start state: asset cache key, start sector, player ship, initial traffic. |
 | `stations/stations.json` | Station types: shipyards, docks, trading stations, factories. Optional. |
 | `wares/wares.json` | Tradeable wares. Optional; stations name them by id. |
+| `sectors/sectors.json` | The universe map: sectors, owners, gates, stations. Optional; the ruleset's `startSector` names one by id. |
 
 A total conversion is a mod that patches `rules/ruleset.json`.
 
@@ -151,6 +152,20 @@ group. The first-party rosters derive `cruiseSpeed` from `speed` and `mainThrust
 | `priceMin`, `priceMax` | Trading range in credits. |
 
 A station naming a ware no package defines is reported in the diagnostics and otherwise ignored.
+
+### Sector fields
+
+| Field | Meaning |
+|---|---|
+| `id`, `name`, `xbtfTextId` | Identity, e.g. `argon_prime`. The ruleset's `startSector` is one of these ids. |
+| `x`, `y` | Grid cell, from 1: x runs east, y south. One sector per cell. |
+| `race` | Owner: `argon` … `teladi`, `xenon`, `pirate`. |
+| `gates` | Directions with a gate: `north`, `south`, `east`, `west`. A gate leads to the neighbouring cell, and that sector must list the opposite direction. |
+| `stations` | Station ids in the sector, repeated once per station. |
+
+Adding a sector is a file: put it in an empty cell and add the matching gate to its neighbour. A
+gate into an empty cell, a gate with no way back, two sectors in one cell, or a station nobody
+defines is reported in the diagnostics and otherwise ignored.
 
 ## Code
 

@@ -29,6 +29,9 @@ public static class ContentCatalogs
     /// <summary>Ware catalog path. Optional, like stations.</summary>
     public const string WaresPath = "wares/wares.json";
 
+    /// <summary>Universe map path. Optional, like stations.</summary>
+    public const string SectorsPath = "sectors/sectors.json";
+
     public static ShipCatalog LoadShips(ModContent content)
     {
         IReadOnlyList<string> layers = content.Layers(ShipsPath);
@@ -61,6 +64,15 @@ public static class ContentCatalogs
             ? DefinitionCatalog<WareDefinition>.Empty
             : DefinitionCatalog<WareDefinition>.Create(
                 Deserialize(layers, SimJsonContext.Default.WareCatalogFile, WaresPath).Wares);
+    }
+
+    public static DefinitionCatalog<SectorDefinition> LoadSectors(ModContent content)
+    {
+        IReadOnlyList<string> layers = content.Layers(SectorsPath);
+        return layers.Count == 0
+            ? DefinitionCatalog<SectorDefinition>.Empty
+            : DefinitionCatalog<SectorDefinition>.Create(
+                Deserialize(layers, SimJsonContext.Default.SectorCatalogFile, SectorsPath).Sectors);
     }
 
     public static GameRuleset LoadRuleset(ModContent content)

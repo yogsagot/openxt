@@ -40,6 +40,8 @@ public sealed class GameContext
 
     public DefinitionCatalog<WareDefinition> Wares => Universe.Wares;
 
+    public DefinitionCatalog<SectorDefinition> SectorMap => Universe.SectorMap;
+
     public GameRuleset Rules => Universe.Rules;
 
     /// <summary>True while the window has focus; input is only read then.</summary>

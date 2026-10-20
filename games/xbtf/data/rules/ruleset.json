@@ -12,7 +12,8 @@
   // The simulation never reads this; only the renderer does.
   "assetKey": "xbtf",
 
-  "startSector": "Argon Prime",
+  // A sector id from data/sectors/sectors.json.
+  "startSector": "argon_prime",
   // The original's experimental shuttle, the ship the player arrives in.
   "playerShip": "xperimental",
 

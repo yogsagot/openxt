@@ -118,6 +118,7 @@ public sealed record ShipCatalogFile
 [JsonSerializable(typeof(ShipCatalogFile))]
 [JsonSerializable(typeof(StationCatalogFile))]
 [JsonSerializable(typeof(WareCatalogFile))]
+[JsonSerializable(typeof(SectorCatalogFile))]
 [JsonSerializable(typeof(GameRuleset))]
 public partial class SimJsonContext : JsonSerializerContext;
 

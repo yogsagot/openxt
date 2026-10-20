@@ -39,6 +39,9 @@ public sealed class GameRegistry : IGameRegistry
     {
         GameRegistry registry = new(context);
 
+        // The engine's own presentation features first, through the same door a package uses.
+        new CoreGamePlugin().ConfigureGame(registry);
+
         foreach (IGamePlugin plugin in context.Mods.PluginsOf<IGamePlugin>())
         {
             (int frame, int render, int panel) checkpoint =

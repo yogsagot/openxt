@@ -13,8 +13,8 @@
   "assetKey": "xtension",
 
   // Placeholder start, same standing as xbtf's: the original's opening is scripted and the scene
-  // files are not imported yet.
-  "startSector": "Home of Light",
+  // files are not imported yet. A sector id from data/sectors/sectors.json.
+  "startSector": "home_of_light",
   "playerShip": "argon_discoverer",
 
   "traffic": [
