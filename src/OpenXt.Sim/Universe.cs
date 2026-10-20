@@ -57,7 +57,7 @@ public sealed class Universe : IDisposable
 
     public Sector CreateSector(string name)
     {
-        Sector sector = new(name, Ships, Systems);
+        Sector sector = new(name, Ships, Systems, Stations);
         _sectors.Add(sector);
         return sector;
     }

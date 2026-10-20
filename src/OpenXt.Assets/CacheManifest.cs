@@ -43,6 +43,9 @@ public sealed record CacheManifest
     public int TextureCount { get; set; }
     public int TextCount { get; set; }
 
+    /// <summary>Converted scenes. Caches from before scenes were imported have none, and still work.</summary>
+    public int SceneCount { get; set; }
+
     /// <summary>Metres per archive unit used for this import; see the importer's scale constant.</summary>
     public float MetresPerUnit { get; set; }
 
@@ -80,4 +83,5 @@ public sealed record CacheManifest
     AllowTrailingCommas = true)]
 [JsonSerializable(typeof(CacheManifest))]
 [JsonSerializable(typeof(Dictionary<int, string>))]
+[JsonSerializable(typeof(OxScene))]
 public partial class AssetJsonContext : JsonSerializerContext;

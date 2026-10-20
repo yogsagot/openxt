@@ -48,6 +48,11 @@ public static class AssetCachePaths
 
     public static string Text(string gameKey) => Path.Combine(ForGame(gameKey), "text");
 
+    public static string Scenes(string gameKey) => Path.Combine(ForGame(gameKey), "scenes");
+
+    public static string SceneFile(string gameKey, int sceneId) =>
+        Path.Combine(Scenes(gameKey), $"{sceneId:D5}.json");
+
     public static string Manifest(string gameKey) => Path.Combine(ForGame(gameKey), "manifest.json");
 
     public static string MeshFile(string gameKey, int bodyId) =>

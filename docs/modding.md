@@ -143,6 +143,7 @@ group. The first-party rosters derive `cruiseSpeed` from `speed` and `mainThrust
 | `product` | Ware id the station makes. |
 | `inputs`, `output`, `cycleSeconds` | One production cycle: `[{ "ware": id, "amount": n }]` in, `output` units of `product` out, taking `cycleSeconds`. |
 | `price`, `hull` | Purchase price in credits; hull. |
+| `radius` | Collision sphere radius in metres, default 60. |
 
 ### Ware fields
 
@@ -161,7 +162,7 @@ A station naming a ware no package defines is reported in the diagnostics and ot
 | `x`, `y` | Grid cell, from 1: x runs east, y south. One sector per cell. |
 | `race` | Owner: `argon` … `teladi`, `xenon`, `pirate`. |
 | `gates` | Directions with a gate: `north`, `south`, `east`, `west`. A gate leads to the neighbouring cell, and that sector must list the opposite direction. |
-| `stations` | Station ids in the sector, repeated once per station. |
+| `stations` | Placements: `[{ "station": id, "x": m, "y": m, "z": m }]`, metres from the sector's centre (x east, y up, z north). The start sector's stations are spawned when the game starts. |
 
 Adding a sector is a file: put it in an empty cell and add the matching gate to its neighbour. A
 gate into an empty cell, a gate with no way back, two sectors in one cell, or a station nobody

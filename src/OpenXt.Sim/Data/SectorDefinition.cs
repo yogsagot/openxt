@@ -31,8 +31,8 @@ public sealed record SectorDefinition : IDefinition
     /// <summary>The directions this sector has gates in: north, south, east, west.</summary>
     public List<string> Gates { get; set; } = [];
 
-    /// <summary>Station definition ids in this sector, repeated once per station.</summary>
-    public List<string>? Stations { get; set; }
+    /// <summary>The stations in this sector and where they stand.</summary>
+    public List<StationPlacement>? Stations { get; set; }
 
     /// <summary>The neighbouring cell a gate direction leads to; null for an unknown direction.</summary>
     public static (int X, int Y)? Step(int x, int y, string direction) => direction switch
@@ -52,6 +52,18 @@ public sealed record SectorDefinition : IDefinition
         West => East,
         _ => null,
     };
+}
+
+/// <summary>
+/// One station in a sector: which station definition, and its position in metres in the sector's
+/// own frame (x east, y up, z north, the origin at the sector's centre).
+/// </summary>
+public sealed record StationPlacement
+{
+    public required string Station { get; set; }
+    public float X { get; set; }
+    public float Y { get; set; }
+    public float Z { get; set; }
 }
 
 public sealed record SectorCatalogFile

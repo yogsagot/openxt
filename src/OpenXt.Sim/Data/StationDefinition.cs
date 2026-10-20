@@ -44,6 +44,12 @@ public sealed record StationDefinition : IDefinition
     /// <summary>Inferred from the station record; unconfirmed.</summary>
     public int? Hull { get; set; }
 
+    /// <summary>
+    /// Collision sphere radius, metres. Ours, like a ship's hullRadius: the game records hold no
+    /// size, and the bodies are not authored at a common scale.
+    /// </summary>
+    public float Radius { get; set; } = 60f;
+
     /// <summary>Purchase price in credits.</summary>
     public int? Price { get; set; }
 

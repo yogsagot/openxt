@@ -26,16 +26,21 @@ public sealed class Sector : IDisposable
     /// <summary>The ship catalog this sector spawns from — merged from every loaded package.</summary>
     public ShipCatalog Ships { get; }
 
+    /// <summary>The station catalog this sector spawns from.</summary>
+    public DefinitionCatalog<StationDefinition> Stations { get; }
+
     /// <summary>Live entity count. Cached set — never build an EntitySet per frame.</summary>
     public int EntityCount => _all.Count;
 
     /// <summary>How many systems run in this sector, engine and mods together.</summary>
     public int SystemCount => _systems.Count;
 
-    public Sector(string name, ShipCatalog catalog, SectorSystemPlan systems)
+    public Sector(
+        string name, ShipCatalog catalog, SectorSystemPlan systems, DefinitionCatalog<StationDefinition>? stations = null)
     {
         Name = name;
         Ships = catalog;
+        Stations = stations ?? DefinitionCatalog<StationDefinition>.Empty;
         World = new World();
         Physics = new PhysicsWorld();
         _all = World.GetEntities().With<Pose>().AsSet();
@@ -58,6 +63,22 @@ public sealed class Sector : IDisposable
         {
             Body = Physics.AddShipHull(position, orientation, definition.HullRadius),
             Radius = definition.HullRadius,
+        });
+        return entity;
+    }
+
+    public Entity SpawnStation(string definitionId, Vector3 position, Quaternion orientation)
+    {
+        int index = Stations.IndexOf(definitionId);
+        StationDefinition definition = Stations[index];
+
+        Entity entity = World.CreateEntity();
+        entity.Set(new Pose { Position = position, Orientation = orientation });
+        entity.Set(new StationRef { DefinitionIndex = index });
+        entity.Set(new Collider
+        {
+            Body = Physics.AddStationHull(position, orientation, definition.Radius),
+            Radius = definition.Radius,
         });
         return entity;
     }

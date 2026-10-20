@@ -27,7 +27,7 @@ public static partial class ImportCommand
     [GeneratedRegex(@"^t/(\d{2})(\d+)\.txt$", RegexOptions.IgnoreCase)]
     private static partial Regex TextPattern { get; }
 
-    public static int Run(XInstall install, bool force, float? scaleOverride = null)
+    public static int Run(XInstall install, bool force, float? scaleOverride = null, float? sceneScaleOverride = null)
     {
         using CatArchive archive = install.OpenArchive();
 
@@ -59,13 +59,18 @@ public static partial class ImportCommand
         Directory.CreateDirectory(AssetCachePaths.Meshes(gameKey));
         Directory.CreateDirectory(AssetCachePaths.Textures(gameKey));
         Directory.CreateDirectory(AssetCachePaths.Text(gameKey));
+        Directory.CreateDirectory(AssetCachePaths.Scenes(gameKey));
 
         MeshConverter converter = new(scale);
         List<string> problems = [];
         HashSet<int> referencedTextures = [];
         HashSet<int> presentTextures = [];
 
-        int meshes = 0, skippedScenes = 0, emptyBodies = 0;
+        int meshes = 0, emptyBodies = 0;
+
+        // Scenes place bodies, so they are converted after every body is known.
+        Dictionary<int, BodyInfo> bodies = [];
+        List<(int Id, string Path, BodScene Scene)> scenes = [];
 
         foreach (CatEntry entry in archive.Entries)
         {
@@ -83,9 +88,9 @@ public static partial class ImportCommand
                 string text = Encoding.Latin1.GetString(PckStream.Decode(archive.Read(entry)));
 
                 // Scene files share the extension but describe body placement, not geometry.
-                if (text.Contains("VER:", StringComparison.Ordinal))
+                if (SceneParser.IsScene(text))
                 {
-                    skippedScenes++;
+                    scenes.Add((bodyId, entry.Path, SceneParser.Parse(text)));
                     continue;
                 }
 
@@ -101,6 +106,7 @@ public static partial class ImportCommand
                 }
 
                 mesh.WriteFile(AssetCachePaths.MeshFile(gameKey, bodyId));
+                bodies[bodyId] = new BodyInfo(mesh.Lods.Length, mesh.Lods[0].Vertices.Length, mesh.BoundingRadius);
                 meshes++;
             }
             catch (Exception ex) when (ex is InvalidDataException or IOException)
@@ -109,8 +115,24 @@ public static partial class ImportCommand
             }
         }
 
-        Console.WriteLine($"meshes    {meshes,6:N0} written  ({skippedScenes:N0} scenes skipped, " +
-                          $"{emptyBodies:N0} empty bodies)");
+        Console.WriteLine($"meshes    {meshes,6:N0} written  ({emptyBodies:N0} empty bodies)");
+
+        SceneConverter sceneConverter = new(scale, sceneScaleOverride ?? SceneConverter.DefaultBodyScale);
+        int sceneCount = 0;
+        foreach ((int id, string path, BodScene scene) in scenes)
+        {
+            try
+            {
+                sceneConverter.Convert(id, scene, bodies).WriteFile(AssetCachePaths.SceneFile(gameKey, id));
+                sceneCount++;
+            }
+            catch (IOException ex)
+            {
+                problems.Add($"{path}: {ex.Message}");
+            }
+        }
+
+        Console.WriteLine($"scenes    {sceneCount,6:N0} written");
 
         int textures = 0;
         foreach (CatEntry entry in archive.Entries)
@@ -171,6 +193,7 @@ public static partial class ImportCommand
             MeshCount = meshes,
             TextureCount = textures,
             TextCount = textTables,
+            SceneCount = sceneCount,
             MetresPerUnit = scale,
             ImportedUtc = DateTimeOffset.UtcNow,
             MissingTextures = missing,

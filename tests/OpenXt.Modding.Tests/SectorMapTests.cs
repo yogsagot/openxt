@@ -1,4 +1,7 @@
+using System.Numerics;
+using DefaultEcs;
 using OpenXt.Sim;
+using OpenXt.Sim.Components;
 using OpenXt.Sim.Data;
 using OpenXt.Sim.Modding;
 using Xunit;
@@ -17,7 +20,7 @@ public class SectorMapTests
         """
         { "sectors": [
             { "id": "argon_prime", "name": "Argon Prime", "x": 2, "y": 4, "race": "argon",
-              "gates": [ "east" ], "stations": [ "argon_shipyard" ] },
+              "gates": [ "east" ], "stations": [ { "station": "argon_shipyard", "x": 500, "z": -1500 } ] },
             { "id": "the_wall", "name": "The Wall", "x": 3, "y": 4, "race": "argon", "gates": [ "west" ] }
         ] }
         """;
@@ -57,6 +60,41 @@ public class SectorMapTests
     }
 
     [Fact]
+    public void TheStartSectorsStationsArePlaced()
+    {
+        using PackageTree tree = new();
+        Game(tree, "argon_prime");
+
+        SimWorld world = SimBootstrap.Start(tree.Load("testgame"));
+        using Universe universe = world.Universe;
+
+        Entity station = Assert.Single(world.StartSector.World.GetEntities().With<StationRef>().AsEnumerable());
+        Assert.Equal("argon_shipyard", universe.Stations[station.Get<StationRef>().DefinitionIndex].Id);
+        Assert.Equal(new Vector3(500f, 0f, -1500f), station.Get<Pose>().Position);
+
+        // A station is placed, not flown: the flight model never sees it.
+        Assert.False(station.Has<Motion>());
+
+        // It still steps: stations sit in the physics world without disturbing the tick.
+        for (int i = 0; i < 60; i++)
+            universe.Step(1f / 60f);
+        Assert.Equal(new Vector3(500f, 0f, -1500f), station.Get<Pose>().Position);
+    }
+
+    [Fact]
+    public void AnUnknownStationIsNotSpawned()
+    {
+        using PackageTree tree = new();
+        Game(tree, "argon_prime");
+        Mod(tree, """{ "sectors": [ { "id": "argon_prime", "stations": [ { "station": "nonexistent_factory" } ] } ] }""");
+
+        SimWorld world = SimBootstrap.Start(tree.Load("testgame"));
+        using Universe universe = world.Universe;
+
+        Assert.Empty(world.StartSector.World.GetEntities().With<StationRef>().AsEnumerable());
+    }
+
+    [Fact]
     public void WithoutAMapTheStartSectorIsJustAName()
     {
         using PackageTree tree = new();
@@ -92,7 +130,7 @@ public class SectorMapTests
             """
             { "sectors": [
                 { "id": "the_wall", "gates": [] },
-                { "id": "argon_prime", "stations": [ "argon_shipyard", "nonexistent_factory" ] }
+                { "id": "argon_prime", "stations": [ { "station": "argon_shipyard" }, { "station": "nonexistent_factory" } ] }
             ] }
             """);
 

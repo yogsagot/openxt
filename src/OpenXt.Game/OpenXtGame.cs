@@ -2,6 +2,7 @@ using DefaultEcs;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using OpenXt.Assets;
 using OpenXt.Game.Assets;
 using OpenXt.Game.Debug;
 using OpenXt.Game.Modding;
@@ -9,6 +10,7 @@ using OpenXt.Game.Rendering;
 using OpenXt.Modding;
 using OpenXt.Sim;
 using OpenXt.Sim.Components;
+using OpenXt.Sim.Data;
 using OpenXt.Sim.Modding;
 
 // Inside this project, unqualified Vector3/Quaternion/Matrix are MonoGame's. Simulation vectors are
@@ -197,8 +199,9 @@ public sealed class OpenXtGame : Microsoft.Xna.Framework.Game
     }
 
     /// <summary>
-    /// Draws each ship as its imported mesh, falling back to a debug box while the mesh is still
-    /// loading or when there is no asset cache at all.
+    /// Draws each ship and station as its imported mesh, falling back to a debug box while the mesh
+    /// is still loading or when there is no asset cache at all. A station draws as its main body
+    /// only, until station scenes are imported.
     /// </summary>
     private void DrawSector(Matrix view, Matrix projection)
     {
@@ -218,17 +221,61 @@ public sealed class OpenXtGame : Microsoft.Xna.Framework.Game
             Quaternion orientation = Camera.ToXna(pose.Orientation);
             bool isPlayer = entity.Has<PlayerControlled>();
 
-            GpuMesh? mesh = _assets.Request(_universe.Ships[entity.Get<ShipRef>().DefinitionIndex].XbtfBodyId);
+            bool isStation = entity.Has<StationRef>();
+            Matrix world = Matrix.CreateFromQuaternion(orientation) * Matrix.CreateTranslation(position);
+            int bodyId;
+
+            if (isStation)
+            {
+                StationDefinition station = _universe.Stations[entity.Get<StationRef>().DefinitionIndex];
+                if (DrawScene(_assets.RequestScene(station.XbtfSceneId), world))
+                    continue;
+                bodyId = station.XbtfBodyId;
+            }
+            else
+            {
+                bodyId = _universe.Ships[entity.Get<ShipRef>().DefinitionIndex].XbtfBodyId;
+            }
+
+            GpuMesh? mesh = _assets.Request(bodyId);
 
             if (mesh is not null)
             {
-                _meshes.Draw(mesh, Matrix.CreateFromQuaternion(orientation) * Matrix.CreateTranslation(position));
+                _meshes.Draw(mesh, world);
                 continue;
             }
 
-            _shapes.Box(position, orientation, collider.Radius, isPlayer ? Color.White : Color.SlateGray);
+            _shapes.Box(position, orientation, collider.Radius,
+                isPlayer ? Color.White : isStation ? Color.DarkOrange : Color.SlateGray);
             _shapes.Axes(position, orientation, collider.Radius * 2.5f);
         }
+    }
+
+    /// <summary>
+    /// Draws a station as its scene: every structural part, each placed in the station's frame.
+    /// False until the scene and at least one part's mesh have loaded, so the caller can fall back
+    /// to the station's main body meanwhile. Effect parts (lights, signs) are skipped until there
+    /// is a glow pass.
+    /// </summary>
+    private bool DrawScene(OxScene? scene, Matrix world)
+    {
+        if (scene is null)
+            return false;
+
+        bool drewAny = false;
+        foreach (OxScenePart part in scene.Parts)
+        {
+            if (part.Effect || _assets.Request(part.BodyId) is not { } mesh)
+                continue;
+
+            Matrix local = Matrix.CreateScale(part.Scale)
+                           * Matrix.CreateFromQuaternion(new Quaternion(part.QX, part.QY, part.QZ, part.QW))
+                           * Matrix.CreateTranslation(part.X, part.Y, part.Z);
+            _meshes.Draw(mesh, local * world);
+            drewAny = true;
+        }
+
+        return drewAny;
     }
 
     /// <summary>A plane of lines so motion is legible without any art in the scene.</summary>

@@ -31,6 +31,10 @@ public sealed class AssetCache : IDisposable
     private readonly HashSet<int> _requested = [];
     private readonly Dictionary<int, Texture2D?> _textures = [];
 
+    private readonly ConcurrentQueue<(int SceneId, OxScene? Scene)> _loadedScenes = new();
+    private readonly Dictionary<int, OxScene?> _scenes = [];
+    private readonly HashSet<int> _requestedScenes = [];
+
     private Texture2D? _fallbackTexture;
     private Dictionary<int, string> _text = [];
 
@@ -148,9 +152,45 @@ public sealed class AssetCache : IDisposable
         return null;
     }
 
+    /// <summary>
+    /// Asks for a scene, the same way as <see cref="Request"/>: null until it has loaded, and null
+    /// for good when the cache has none (a cache from before scenes were imported, for one).
+    /// </summary>
+    public OxScene? RequestScene(int sceneId)
+    {
+        if (sceneId <= 0 || !IsUsable)
+            return null;
+
+        if (_scenes.TryGetValue(sceneId, out OxScene? scene))
+            return scene;
+
+        if (!_requestedScenes.Add(sceneId))
+            return null;
+
+        string path = AssetCachePaths.SceneFile(_gameKey, sceneId);
+
+        Task.Run(() =>
+        {
+            try
+            {
+                _loadedScenes.Enqueue((sceneId, File.Exists(path) ? OxScene.ReadFile(path) : null));
+            }
+            catch (Exception ex) when (ex is IOException or JsonException)
+            {
+                _loadedScenes.Enqueue((sceneId, null));
+            }
+        });
+
+        return null;
+    }
+
     /// <summary>Drains finished loads onto the GPU. Main thread only; call once per frame.</summary>
     public void Update()
     {
+        // Scenes need no GPU work; publish every finished one.
+        while (_loadedScenes.TryDequeue(out (int SceneId, OxScene? Scene) scene))
+            _scenes[scene.SceneId] = scene.Scene;
+
         for (int i = 0; i < UploadsPerFrame && _loaded.TryDequeue(out (int BodyId, OxMesh Mesh) item); i++)
         {
             if (item.Mesh is null)

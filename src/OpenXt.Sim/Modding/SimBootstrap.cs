@@ -98,10 +98,10 @@ public static class SimBootstrap
                         $"sector '{sector.Id}' has a {gate} gate to '{neighbour.Id}', which has none back.");
             }
 
-            foreach (string station in sector.Stations ?? [])
+            foreach (StationPlacement placement in sector.Stations ?? [])
             {
-                if (!stations.Contains(station))
-                    host.Diagnostics.Warning(source, $"sector '{sector.Id}' places '{station}', which no package defines.");
+                if (!stations.Contains(placement.Station))
+                    host.Diagnostics.Warning(source, $"sector '{sector.Id}' places '{placement.Station}', which no package defines.");
             }
         }
     }
@@ -144,6 +144,8 @@ public static class SimBootstrap
             throw new ModContentException(
                 $"The ruleset starts the player in '{rules.PlayerShip}', which no package defines.");
 
+        SpawnStations(universe, sector);
+
         Entity player = sector.SpawnShip(
             rules.PlayerShip,
             new Vector3(rules.StartX, rules.StartY, rules.StartZ),
@@ -167,6 +169,22 @@ public static class SimBootstrap
         }
 
         return new SimWorld(universe, sector, player);
+    }
+
+    /// <summary>
+    /// Places the start sector's stations, from its map entry. Stations no package defines were
+    /// reported when the map was checked, and are skipped here.
+    /// </summary>
+    private static void SpawnStations(Universe universe, Sector sector)
+    {
+        if (!universe.SectorMap.TryIndexOf(universe.Rules.StartSector, out int index))
+            return;
+
+        foreach (StationPlacement placement in universe.SectorMap[index].Stations ?? [])
+        {
+            if (universe.Stations.Contains(placement.Station))
+                sector.SpawnStation(placement.Station, new Vector3(placement.X, placement.Y, placement.Z), Quaternion.Identity);
+        }
     }
 
     /// <summary>

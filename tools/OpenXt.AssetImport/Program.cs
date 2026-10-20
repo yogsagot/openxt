@@ -43,7 +43,7 @@ internal static class Cli
                         : ArchiveCommands.Cat(install, positional[0], HasFlag(rest, "--raw"))),
                 "verify" => WithInstall(rest, (install, _) => ArchiveCommands.Verify(install)),
                 "import" => WithInstall(rest, (install, _) =>
-                    ImportCommand.Run(install, HasFlag(rest, "--force"), ReadScale(rest))),
+                    ImportCommand.Run(install, HasFlag(rest, "--force"), ReadScale(rest), ReadScale(rest, "--scene-scale"))),
                 "ships" => WithInstall(rest, (install, _) =>
                     ShipCommands.Run(install, HasFlag(rest, "--json"))),
                 "stations" => WithInstall(rest, (install, _) =>
@@ -127,7 +127,7 @@ internal static class Cli
     }
 
     /// <summary>Options that take a following value, so it is not mistaken for a positional.</summary>
-    private static readonly string[] ValueOptions = ["--install", "--game", "--scale"];
+    private static readonly string[] ValueOptions = ["--install", "--game", "--scale", "--scene-scale"];
 
     private static bool HasFlag(string[] args, string flag) =>
         args.Contains(flag, StringComparer.Ordinal);
@@ -167,8 +167,8 @@ internal static class Cli
     /// --scale overrides metres-per-archive-unit. It exists because that constant is inferred
     /// rather than measured, so correcting it should not need a rebuild.
     /// </summary>
-    private static float? ReadScale(string[] args) =>
-        ReadOption(args, "--scale") is { } raw
+    private static float? ReadScale(string[] args, string option = "--scale") =>
+        ReadOption(args, option) is { } raw
         && float.TryParse(raw, NumberStyles.Float, CultureInfo.InvariantCulture, out float scale)
         && scale > 0f
             ? scale
@@ -190,7 +190,8 @@ internal static class Cli
               ls [prefix]                 list archive contents, optionally filtered by path prefix
               cat <entry> [--raw]         dump one entry; PCK files are decoded unless --raw
               verify                      decode everything and report failures
-              import [--force] [--scale N]  convert the archive into OpenXT's local asset cache
+              import [--force] [--scale N] [--scene-scale N]
+                                          convert the archive into OpenXT's local asset cache
               meshinfo <bodyId>...        inspect converted meshes (sizes are in metres)
               ships [--json]              dump the ship table compiled into the game executable
               stations [--json]           dump its station table, with race and roster ids

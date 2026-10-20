@@ -192,7 +192,14 @@ Three things to know before touching the pipeline:
 - **Sector cells come from the text tables; races and gates do not come from the games.** A sector's text id encodes
   its cell (`2YX` in XBTF, `102YYXX` in X-Tension). Ownership and gates are set up by the compiled script
   (`l/001.obj`, `STO2` bytecode, undecoded), so `games/*/data/sectors/sectors.json` reads them from elite-games.ru's
-  map images, and XBTF's stations per sector from its Excel map. Decoding the script would replace both.
+  map images, and XBTF's stations per sector from its Excel map, positioned where that sheet draws them (1.5 km per
+  cell, our spacing). Decoding the script would replace all three.
+- **Stations render as their scenes.** `SceneParser` reads the scene `.pbd`s (`VER: 2;`) and the importer writes
+  `scenes/NNNNN.json`: every part's body, position and rotation (turns about an axis, as a quaternion). Parts carry
+  no scale in the file, yet only fit together with their bodies drawn about four times larger than alone, so
+  `SceneConverter.DefaultBodyScale` is 4 — fitted, not read (`--scene-scale` corrects it). Lights, glows and signs
+  (bodies with at most two LODs) are tagged `effect` and skipped until there is a glow pass. Station collision radii in
+  `stations.json` come from these assembled scenes.
 
 Rules:
 

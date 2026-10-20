@@ -41,6 +41,13 @@ public sealed class PhysicsWorld : IDisposable
             new BodyActivityDescription(0.01f)));
     }
 
+    /// <summary>
+    /// Registers a station as a sphere that never moves. Kinematic like a ship hull, so it shares
+    /// the <see cref="BodyHandle"/> type entities carry, and zero velocity keeps it where it is.
+    /// </summary>
+    public BodyHandle AddStationHull(Vector3 position, Quaternion orientation, float radius) =>
+        AddShipHull(position, orientation, radius);
+
     /// <summary>Pushes the authoritative sim pose into the collidable. Call after the flight model runs.</summary>
     public void SyncPose(BodyHandle handle, Vector3 position, Quaternion orientation, Vector3 linearVelocity)
     {

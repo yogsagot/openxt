@@ -36,6 +36,12 @@ public struct ShipRef
     public int DefinitionIndex;
 }
 
+/// <summary>Index into the universe's station catalog; station data is never stored per entity.</summary>
+public struct StationRef
+{
+    public int DefinitionIndex;
+}
+
 /// <summary>Link to the Bepu collidable that mirrors this entity's pose for collision queries.</summary>
 public struct Collider
 {

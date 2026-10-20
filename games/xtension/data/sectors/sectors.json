@@ -5,9 +5,10 @@
   // id encodes its cell (102YYXX in X-Tension; x runs east, y south, from 1).
   //
   // race and gates are not in any game file decoded so far (the universe is set up by the compiled
-  // script, l/001.obj). They are read from elite-games.ru's map: the X-Tension 2.1 map (map_1.gif, map_2.gif),
-  // by sampling each cell's colour and the midpoint of every shared edge, where a wall is black
-  // background and a gate is not. Gates are symmetric; each lists the directions it opens to.
+  // script, l/001.obj). They are read from elite-games.ru's map, the X-Tension 2.1 map_1.gif and
+  // map_2.gif, by sampling each cell's colour and the midpoint of every shared edge, where a
+  // wall is black background and a gate is not. Gates are symmetric; each lists the directions
+  // it opens to.
   //
   // Getsu Fune and the Xenon sector beyond it appear in the game only after the Perseus mission.
   // No station lists: the site's X-Tension map marks only shipyards, docks and trading stations.
