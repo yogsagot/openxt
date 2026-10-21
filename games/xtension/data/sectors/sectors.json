@@ -9,8 +9,9 @@
   // matches it. Getsu Fune and the Xenon sector beyond it are added later by the plot,
   // with coordinates known only at runtime, so their gates are the map's alone.
   //
-  // race is not among the script values decoded so far, so it is read from elite-games.ru's map,
-  // the X-Tension 2.1 map_1.gif and map_2.gif, by sampling each cell's colour. The gates were
+  // race: the script names the owner of every sector with a trading station, and each such
+  // race here matches it. The rest have no owner in the script; their race is read from
+  // elite-games.ru's map, the X-Tension 2.1 map_1.gif and map_2.gif, by sampling each cell's colour. The gates were
   // first read from the same map, at the midpoint of every shared edge, where a wall is black
   // background and a gate is not. Gates are symmetric; each lists the directions it opens to.
   //

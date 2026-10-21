@@ -8,10 +8,11 @@
   // map editor's data (see ScriptUniverse; openxt-import universe prints it), and every gate here
   // matches it.
   //
-  // race is not among the script values decoded so far, so it is read from elite-games.ru's map,
-  // xbtf.png, by sampling each cell's colour. The gates were first read from the same
-  // map, at the midpoint of every shared edge, where a wall is black background and a gate is
-  // not. Gates are symmetric; each lists the directions it opens to.
+  // race: the script names the owner of every sector with a trading station, and each such
+  // race here matches it. The rest have no owner in the script; their race is read from
+  // elite-games.ru's map, xbtf.png, by sampling each cell's colour. The gates were first
+  // read from the same map, at the midpoint of every shared edge, where a wall is black background
+  // and a gate is not. Gates are symmetric; each lists the directions it opens to.
   //
   // stations come from the same site's Excel map (mapxbtf.rar), which draws each sector as a
   // 16 x 16 block, top-down, with station codes where the stations stand. x and z are that
@@ -21,6 +22,11 @@
   // one the plankton farm). Its unexplained markers (*, + and one V in an enemy sector) are
   // skipped. A station of another race inside a sector would be misread; the map gives no
   // way to tell.
+  //
+  // The script places the same stations in 45 of the 51 sectors that list any (openxt-import
+  // universe --objects). It has a Pirate Anarchy Port where this says pirate_base, an Unknown
+  // Xenon Ship for xenon_sector_7_6's xenon_station, and a silicon mine in Company Pride where
+  // the sheet has an ore mine. The positions here are still the sheet's.
   //
   // A mod changes the map by layering its own data/sectors/sectors.json; entries merge by id.
   "sectors": [

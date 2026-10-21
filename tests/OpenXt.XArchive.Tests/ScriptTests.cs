@@ -275,12 +275,156 @@ public sealed class ScriptFileTests
 
         Assert.Equal(2, universe.Sectors.Count);
         Assert.Equal((1, 1, SectorGates.South | SectorGates.East), (universe.Sectors[0].X, universe.Sectors[0].Y, universe.Sectors[0].Gates));
-        Assert.Equal(3, Assert.Single(universe.Sectors[0].Objects).Count);
+        Assert.Equal(3, Assert.Single(universe.Sectors[0].Objects).Source.Count);
         Assert.Equal((2, 1, SectorGates.West), (universe.Sectors[1].X, universe.Sectors[1].Y, universe.Sectors[1].Gates));
 
         // GS_AddGate(side 2, y − 1 = 0, x − 1 = 1): the west gate of the sector at (2, 1).
         Assert.Equal(new ScriptGate("Plot", 2, 1, SectorGates.West), Assert.Single(universe.ExtraGates));
     }
+
+    private static void Emit(List<ushort> code, ScriptOpcode opcode, params int[] operands)
+    {
+        code.Add((ushort)opcode);
+        foreach (int operand in operands)
+            code.Add((ushort)operand);
+    }
+
+    private static void EmitJumpIfFalse(List<ushort> code, int target) =>
+        code.AddRange([(ushort)ScriptOpcode.JumpIfFalse, (ushort)(target >> 16), (ushort)target]);
+
+    /// <summary>
+    /// A miniature of the game's script: a <c>BuildObject</c> switch from kinds to classes, one race
+    /// created the way <c>Build</c> creates them, and editor data with one sector of every object type.
+    /// </summary>
+    [Fact]
+    public void DecodesObjectsRacesAndOwners()
+    {
+        ScriptBuilder builder = new();
+        int buildFromEditor = builder.Name(ScriptUniverse.BuilderClassMethod);
+        int buildObject = builder.Name(ScriptUniverse.ObjectBuilderMethod);
+        int build = builder.Name("Build");
+        int readText = builder.Name(ScriptUniverse.ReadTextNative);
+
+        List<ushort> code = [0x0000];
+
+        int editorAddress = code.Count;
+        EmitLiteral(code, new object[]
+        {
+            new object[]
+            {
+                1, 0, 0, 0,
+                new object[] { 2, 7 },                                      // background, not a BuildObject kind
+                new object[] { 5, 100, -5, -200, 0, 1, 318, 1, new object[] { new object[] { 8, 2 } } },
+                new object[] { 5, 0, 0, 0, 2, 7, 376 },                     // pirate base: never the owner
+                new object[]
+                {
+                    6, 0, 0, 0, 2, 1, 214,
+                    7, new object[] { new object[] { 13, 0 } },
+                    8, new object[] { new object[] { 11, 0 } },
+                    2, new object[] { new object[] { 17, 0, 0, 0, 1, 0, 0 } },
+                },
+                new object[] { 6, 0, 0, 0, 0, 1, 310 },
+                new object[] { 5, 0, 0, 0, 1, 8, 374 },
+                new object[] { 17, 0, 0, 0, 1, 0, 0 },
+            },
+        });
+        Emit(code, ScriptOpcode.StoreStack, 1);
+        Emit(code, ScriptOpcode.Return);
+
+        // BuildObject: Dup; kind; Equal; JumpIfFalse next — each case creating its classes.
+        int objectAddress = code.Count;
+        (int Kind, int[] Classes)[] cases = [(6, [2037, 2006]), (5, [2042, 2007]), (17, [2012])];
+        List<int> patches = [];
+        foreach ((int kind, int[] classes) in cases)
+        {
+            if (patches.Count > 0)
+            {
+                int here = code.Count;
+                code[patches[^1]] = (ushort)(here >> 16);
+                code[patches[^1] + 1] = (ushort)here;
+            }
+
+            Emit(code, ScriptOpcode.Dup);
+            EmitLiteral(code, kind);
+            Emit(code, ScriptOpcode.Equal);
+            EmitJumpIfFalse(code, 0);
+            patches.Add(code.Count - 2);
+            Emit(code, ScriptOpcode.Pop);
+            foreach (int type in classes)
+            {
+                Emit(code, ScriptOpcode.Push16, type);
+                Emit(code, ScriptOpcode.New);
+            }
+
+            Emit(code, ScriptOpcode.Return);
+        }
+
+        int last = code.Count;
+        code[patches[^1]] = (ushort)(last >> 16);
+        code[patches[^1] + 1] = (ushort)last;
+        Emit(code, ScriptOpcode.Return);
+
+        // Build: SE_ReadText(751); index 1; 4; New 2003.
+        int buildAddress = code.Count;
+        Emit(code, ScriptOpcode.Push16, 751);
+        EmitLiteral(code, 1);
+        Emit(code, ScriptOpcode.CallNative32, 0, readText);
+        EmitLiteral(code, 1);
+        EmitLiteral(code, 4);
+        Emit(code, ScriptOpcode.Push16, ScriptUniverse.RaceClass);
+        Emit(code, ScriptOpcode.New);
+        Emit(code, ScriptOpcode.Return);
+
+        ScriptUniverse universe = ScriptUniverse.Read(ScriptFile.Parse(builder
+            .Code([.. code])
+            .Chunk("SYMB", 1, buildAddress, build, 0)
+            .Chunk("OBJE", 1, 2000)
+            .Chunk("SYMB", 2, editorAddress, buildFromEditor, 0, objectAddress, buildObject, 0)
+            .Build()))!;
+
+        Assert.Equal([2037, 2006], universe.KindClasses[6]);
+        Assert.Equal([2012], universe.KindClasses[17]);
+        Assert.Equal(751, universe.Races[1]);
+
+        ScriptSector sector = Assert.Single(universe.Sectors);
+        Assert.Equal(7, sector.Background);
+        Assert.Equal(1, sector.Owner);
+        Assert.Equal(
+            [
+                ScriptObjectType.TradingStation, ScriptObjectType.TradingStation, ScriptObjectType.Factory,
+                ScriptObjectType.Shipyard, ScriptObjectType.TalkingStation, ScriptObjectType.Asteroid,
+            ],
+            sector.Objects.Select(o => o.Type));
+
+        ScriptObject trading = sector.Objects[0];
+        Assert.Equal((100, -5, -200, 1), (trading.East, trading.Up, trading.North, trading.Race));
+        Assert.Equal(3181, trading.StationTextId);
+        Assert.Equal(new ScriptWare(8, 2), Assert.Single(trading.Tradeables));
+        Assert.Empty(trading.SecondaryResources);
+
+        ScriptObject factory = sector.Objects[2];
+        Assert.Equal((2141, 2143), (factory.StationTextId, factory.ProductTextId));
+        Assert.Equal(new ScriptWare(13, 0), Assert.Single(factory.Products));
+        Assert.Equal(new ScriptWare(11, 0), Assert.Single(factory.Resources));
+        Assert.Equal(ScriptObjectType.Asteroid, Assert.Single(factory.Docked).Type);
+        Assert.Null(sector.Objects[5].StationTextId);
+    }
+
+    [Theory]
+    [InlineData(XGame.Tension, 8, 0, 2613)]       // alpha impulse ray emitter
+    [InlineData(XGame.BeyondTheFrontier, 9, 0, 2613)]
+    [InlineData(XGame.Tension, 13, 10, 2563)]     // swamp plant
+    [InlineData(XGame.Tension, 16, 4, 2083)]      // computer components
+    [InlineData(XGame.BeyondTheFrontier, 17, 4, 2083)]
+    public void WaresFollowTextIdOrderWithinTheirCategory(XGame game, int mainType, int subType, int textId) =>
+        Assert.Equal(textId, ScriptWares.TextId(game, new ScriptWare(mainType, subType)));
+
+    [Theory]
+    [InlineData(XGame.Tension, 12, 0)]            // a category nothing has decoded
+    [InlineData(XGame.Tension, 16, 7)]            // equipment beyond the factory goods
+    [InlineData(XGame.Tension, 9, 4)]             // past the last shield
+    public void UndecodedWaresAreNull(XGame game, int mainType, int subType) =>
+        Assert.Null(ScriptWares.TextId(game, new ScriptWare(mainType, subType)));
 
     [Fact]
     public void ScriptWithoutEditorDataHasNoUniverse()
@@ -363,6 +507,45 @@ public sealed class ScriptInstallationTests
         { "xbtf", 54, 0 },
         { "xtension", 90, 1 },
     };
+
+    public static TheoryData<string, int, int, int> KnownObjects => new()
+    {
+        // game key, stations, sectors with an owner, named races
+        { "xbtf", 609, 49, 6 },
+        { "xtension", 1_099, 81, 6 },
+    };
+
+    /// <summary>
+    /// Every station has a kind <c>BuildObject</c> creates, every owner is a race the script names,
+    /// and every factory's products decode to a ware.
+    /// </summary>
+    [RequiresInstallTheory]
+    [MemberData(nameof(KnownObjects))]
+    public void UniverseObjectsDecode(string gameKey, int stations, int owned, int races)
+    {
+        XInstall? install = InstallProbe.ByKey(gameKey);
+        if (install is null)
+            return;
+
+        using CatArchive archive = install.OpenArchive();
+        Assert.True(archive.TryGetEntry("l/001.obj", out CatEntry entry));
+        ScriptUniverse universe = ScriptUniverse.Read(ScriptFile.Parse(archive.Read(entry)))!;
+
+        ScriptObject[] all = universe.Sectors.SelectMany(s => s.Objects).ToArray();
+        Assert.Equal(stations, all.Count(o => o.IsStation));
+        Assert.Equal(owned, universe.Sectors.Count(s => s.Owner is not null));
+        Assert.Equal(races, universe.Races.Count);
+        Assert.All(universe.Sectors, s => Assert.NotNull(s.Background));
+        Assert.All(universe.Sectors.Where(s => s.Owner is not null), s => Assert.Contains(s.Owner!.Value, universe.Races.Keys));
+        Assert.DoesNotContain(all, o => o.Type == ScriptObjectType.Unknown);
+
+        foreach (ScriptObject factory in all.Where(o => o.Type == ScriptObjectType.Factory))
+        {
+            ScriptWare product = Assert.Single(factory.Products);
+            Assert.True(ScriptWares.TextId(install.Game, product) is not null || product.MainType == (install.Game == XGame.Tension ? 16 : 17),
+                $"{gameKey}: product {product} of factory {factory.StationTextId} does not decode");
+        }
+    }
 
     /// <summary>
     /// Every gate must have its partner on the neighbour's facing side: a wrong bit-to-side mapping

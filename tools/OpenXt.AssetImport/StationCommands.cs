@@ -55,16 +55,8 @@ public static class StationCommands
     public static int RunWares(XInstall install, bool json)
     {
         TextTable names = ShipCommands.ReadEnglish(install) ?? throw new InvalidDataException("no English text table");
-        List<Station> stations = Resolve(StationTable.Read(install), names, out _);
         IReadOnlyList<WareRecord> table = WareTable.Read(install);
-
-        // The ware table covers bulk goods; factories make the rest. Both, by text id, in order.
-        SortedSet<int> wares = [];
-        foreach (WareRecord ware in table)
-            wares.Add(ware.TextId);
-        foreach (Station station in stations)
-            if (station.ProductTextId is { } product)
-                wares.Add(product);
+        SortedSet<int> wares = WareTextIds(install, names, table);
 
         if (!json)
         {
@@ -261,7 +253,27 @@ public static class StationCommands
     }
 
     /// <summary>Equipment reuses the ship roster's ids; everything else is its English name.</summary>
-    private static string WareId(int textId, TextTable names)
+    /// <summary>The station roster as <c>stations --json</c> writes it: id, race, kind, text id and product text id.</summary>
+    internal static IReadOnlyList<(string Id, string Race, string Kind, int TextId, int? ProductTextId)> Roster(
+        XInstall install, TextTable names) =>
+        Resolve(StationTable.Read(install), names, out _)
+            .Select(s => (s.Id, s.Race, s.Kind, s.Record.TextId, s.ProductTextId))
+            .ToList();
+
+    /// <summary>The ware table covers bulk goods; factories make the rest. Both, by text id, in order.</summary>
+    internal static SortedSet<int> WareTextIds(XInstall install, TextTable names, IReadOnlyList<WareRecord>? table = null)
+    {
+        SortedSet<int> wares = [];
+        foreach (WareRecord ware in table ?? WareTable.Read(install))
+            wares.Add(ware.TextId);
+        foreach (Station station in Resolve(StationTable.Read(install), names, out _))
+            if (station.ProductTextId is { } product)
+                wares.Add(product);
+        return wares;
+    }
+
+    /// <summary>The id <c>wares.json</c> and the station rosters use for the ware with this text id.</summary>
+    internal static string WareId(int textId, TextTable names)
     {
         if (textId is >= 2613 and <= 2693 && (textId - 2613) % 10 == 0)
             return ShipTable.Lasers[(textId - 2613) / 10];

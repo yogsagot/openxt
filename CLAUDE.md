@@ -189,15 +189,20 @@ Three things to know before touching the pipeline:
   factory's product is its text id + 2. Race is not stored: `StationCommands` recovers it from names, per-race
   scene-id blocks and variant row order, and warns if they disagree. Production recipes, cycle times and all prices
   exist only for X-Tension, from elite-games.ru; XBTF has none.
-- **Sector cells and gates come from the games; races do not yet.** A sector's text id encodes its cell (`2YX` in
-  XBTF, `102YYXX` in X-Tension). The universe is built by the compiled script, `l/001.obj` (`STO2` bytecode, read by
-  `ScriptFile`; `openxt-import script` disassembles it). Its `class2000.BuildFromEditor` holds the map editor's data
-  as one array literal, which `ScriptUniverse` / `openxt-import universe` read: every sector's cell and gate mask,
-  matching the gates in `games/*/data/sectors/sectors.json` for every sector of both games. X-Tension's Getsu Fune
-  and the Xenon sector beyond it are added later by the plot, with runtime coordinates, so their gates stay as read
-  from the map. Ownership is not in those values, so race still comes from elite-games.ru's map images, and XBTF's
-  stations per sector from its Excel map, positioned where that sheet draws them (1.5 km per cell, our spacing).
-  Each sector's object records in the same literal, not decoded yet, should replace both.
+- **The universe comes from the games.** A sector's text id encodes its cell (`2YX` in XBTF, `102YYXX` in X-Tension).
+  The universe is built by the compiled script, `l/001.obj` (`STO2` bytecode, read by `ScriptFile`; `openxt-import
+  script` disassembles it). Its `class2000.BuildFromEditor` holds the map editor's data as one array literal, which
+  `ScriptUniverse` / `openxt-import universe` read: every sector's cell, gates and owner, and every object in it with
+  its position, race and wares. A record's kind means a different thing in each game (XBTF's are mostly X-Tension's
+  plus one), so the reader learns kinds from each script's own `BuildObject`; a station's identity is its text id
+  over ten. Against `games/*/data/sectors/sectors.json` the gates match everywhere, every owned sector's race
+  matches, and XBTF's stations match elite-games.ru's Excel map in 45 of 51 sectors (the rest are a "Pirate Anarchy
+  Port" for its pirate base, an "Unknown Xenon Ship" for a Xenon station, and Company Pride's silicon mine, which the
+  map calls an ore mine). Sectors the script gives no owner are coloured on those maps — Xenon in XBTF, pirate in
+  X-Tension — and that is still where their `race` comes from. X-Tension's Getsu Fune and the Xenon sector beyond it
+  are added later by the plot, with runtime coordinates, so their gates stay as read from the map. Positions are the
+  game's units, east/up/north; the scale is not measured, so `sectors.json` keeps its own 1.5 km spacing for now.
+  Ware categories (`ScriptWares`) were matched against recipes and station lists, not read from the engine.
 - **Stations render as their scenes.** `SceneParser` reads the scene `.pbd`s (`VER: 2;`) and the importer writes
   `scenes/NNNNN.json`: every part's body, position and rotation (turns about an axis, as a quaternion). Parts carry
   no scale in the file, yet only fit together with their bodies drawn about four times larger than alone, so
