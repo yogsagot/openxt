@@ -51,8 +51,8 @@ public readonly record struct ScriptWare(int MainType, int SubType);
 /// <summary>
 /// One object the editor placed. By index the record is: kind, east, up, north, subtype, race,
 /// <see cref="TypeId"/>, then pairs of (list kind, list) — wares the object trades or makes, and
-/// objects docked at it. Coordinates are the game's own units; the axes were matched against
-/// elite-games.ru's XBTF station map, the scale has not been measured.
+/// objects docked at it. Coordinates are the game's own units, <see cref="ScriptUniverse.UnitsPerMetre"/>
+/// to the metre; the axes were matched against elite-games.ru's XBTF station map.
 ///
 /// For a station, <see cref="TypeId"/> is its text id over ten: the name is <c>TypeId·10 + 1</c>
 /// and a factory's product <c>TypeId·10 + 2</c>'s ware, <c>TypeId·10 + 3</c>. Trading stations are
@@ -128,6 +128,17 @@ public sealed class ScriptUniverse
     public const string AddGateNative = "GS_AddGate";
     public const string ReadTextNative = "SE_ReadText";
     public const int RaceClass = 2003;
+
+    /// <summary>
+    /// World units per metre, as the game itself converts them: the HUD's target distance
+    /// (<c>0x0042BBD0</c> in <c>X-TENSION.exe</c>) is the integer 3D distance between the two objects'
+    /// positions times <c>0x126 / 0x10000</c>, printed as <c>%d m</c> or divided by 1000.0 for km. So
+    /// gates stand 7 200 000 units = 32.3 km from a sector's centre. Speeds are stored in nearly the
+    /// same unit (<see cref="ShipTable.DisplayUnitsPerMetre"/>, 222, calibrated from displayed speeds);
+    /// positions use the HUD's exact factor. Checked against the stations' model radii: at this scale
+    /// no two of the ~11 000 station pairs in either game overlap.
+    /// </summary>
+    public const double UnitsPerMetre = 65536.0 / 0x126;
 
     private const int ListKindProducts = 7;
     private const int ListKindResources = 8;

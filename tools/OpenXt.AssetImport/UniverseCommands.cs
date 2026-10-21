@@ -119,7 +119,7 @@ public static class UniverseCommands
 
             foreach (ScriptObject item in sector.Objects.Where(o => o.IsStation))
             {
-                Console.WriteLine($"{"",12}{item.East,10}{item.Up,10}{item.North,10}  " +
+                Console.WriteLine($"{"",12}{Metres(item.East),9:0}{Metres(item.Up),9:0}{Metres(item.North),9:0}  " +
                                   $"{naming.Station(item) ?? $"? {naming.Text(item.StationTextId!.Value) ?? "-"} ({item.StationTextId})"}");
             }
         }
@@ -206,10 +206,10 @@ public static class UniverseCommands
         else
             writer.WriteNumber("raceIndex", item.Race);
 
-        // The game's own units, unscaled: east, up, north.
-        writer.WriteNumber("east", item.East);
-        writer.WriteNumber("up", item.Up);
-        writer.WriteNumber("north", item.North);
+        // Metres from the sector's centre, axes as sectors.json has them: x east, y up, z north.
+        writer.WriteNumber("x", Metres(item.East));
+        writer.WriteNumber("y", Metres(item.Up));
+        writer.WriteNumber("z", Metres(item.North));
 
         WriteWares(writer, "products", item.Products, naming);
         WriteWares(writer, "resources", item.Resources, naming);
@@ -251,6 +251,8 @@ public static class UniverseCommands
             writer.WriteStringValue(side);
         writer.WriteEndArray();
     }
+
+    private static double Metres(int units) => Math.Round(units / ScriptUniverse.UnitsPerMetre, 1);
 
     /// <summary>Lower-case side names in the order <c>sectors.json</c> lists them.</summary>
     private static IEnumerable<string> GateNames(SectorGates gates) =>

@@ -200,8 +200,9 @@ Three things to know before touching the pipeline:
   Port" for its pirate base, an "Unknown Xenon Ship" for a Xenon station, and Company Pride's silicon mine, which the
   map calls an ore mine). Sectors the script gives no owner are coloured on those maps — Xenon in XBTF, pirate in
   X-Tension — and that is still where their `race` comes from. X-Tension's Getsu Fune and the Xenon sector beyond it
-  are added later by the plot, with runtime coordinates, so their gates stay as read from the map. Positions are the
-  game's units, east/up/north; the scale is not measured, so `sectors.json` keeps its own 1.5 km spacing for now.
+  are added later by the plot, with runtime coordinates, so their gates stay as read from the map. Positions are
+  east/up/north in world units, `ScriptUniverse.UnitsPerMetre` (65536/294 ≈ 222.9) to the metre — the factor the
+  HUD's target-distance readout uses, so gates stand 32.3 km out; `sectors.json` still has its own 1.5 km spacing.
   Ware categories (`ScriptWares`) were matched against recipes and station lists, not read from the engine.
 - **Stations render as their scenes.** `SceneParser` reads the scene `.pbd`s (`VER: 2;`) and the importer writes
   `scenes/NNNNN.json`: every part's body, position and rotation (turns about an axis, as a quaternion). Parts carry
