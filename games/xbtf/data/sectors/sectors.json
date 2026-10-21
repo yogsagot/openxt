@@ -4,11 +4,14 @@
   // name, xbtfTextId, x and y are the game's own: the text tables name every sector, and the text
   // id encodes its cell (2YX in XBTF; x runs east, y south, from 1).
   //
-  // race and gates are not in any game file decoded so far (the universe is set up by the compiled
-  // script, l/001.obj). They are read from elite-games.ru's map, xbtf.png, by sampling
-  // each cell's colour and the midpoint of every shared edge, where a
-  // wall is black background and a gate is not. Gates are symmetric; each lists the directions
-  // it opens to.
+  // gates are the game's own too: the compiled script, l/001.obj, builds the universe from the
+  // map editor's data (see ScriptUniverse; openxt-import universe prints it), and every gate here
+  // matches it.
+  //
+  // race is not among the script values decoded so far, so it is read from elite-games.ru's map,
+  // xbtf.png, by sampling each cell's colour. The gates were first read from the same
+  // map, at the midpoint of every shared edge, where a wall is black background and a gate is
+  // not. Gates are symmetric; each lists the directions it opens to.
   //
   // stations come from the same site's Excel map (mapxbtf.rar), which draws each sector as a
   // 16 x 16 block, top-down, with station codes where the stations stand. x and z are that

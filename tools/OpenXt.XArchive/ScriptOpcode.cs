@@ -39,8 +39,8 @@ public enum ScriptOpcode : ushort
 
     Dup = 0x07,
 
-    /// <summary>Pops two, pushes one (helper at <c>0x00435AC0</c>).</summary>
-    Op08 = 0x08,
+    /// <summary>Pop an array, then an index; push the element (helper at <c>0x00435AC0</c>).</summary>
+    Index = 0x08,
 
     /// <summary>Push 0. <c>0x09</c>–<c>0x28</c> push 0–31; see <see cref="ScriptInstruction.SmallConstant"/>.</summary>
     Const0 = 0x09,
@@ -63,8 +63,11 @@ public enum ScriptOpcode : ushort
     /// <summary>Drop [operand] slots.</summary>
     PopN = 0x2E,
 
-    /// <summary>Pops a count and that many values, pushes one (helper at <c>0x004359F0</c>).</summary>
-    Op2F = 0x2F,
+    /// <summary>
+    /// Pop a count and that many values, push them as an array (helper at <c>0x004359F0</c>). The
+    /// last value pushed becomes element 0; see <see cref="ScriptLiteral"/>.
+    /// </summary>
+    MakeArray = 0x2F,
 
     /// <summary>Pops a count and that many values, pushes one (helper at <c>0x00438FA0</c>).</summary>
     Op30 = 0x30,

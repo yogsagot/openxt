@@ -189,11 +189,15 @@ Three things to know before touching the pipeline:
   factory's product is its text id + 2. Race is not stored: `StationCommands` recovers it from names, per-race
   scene-id blocks and variant row order, and warns if they disagree. Production recipes, cycle times and all prices
   exist only for X-Tension, from elite-games.ru; XBTF has none.
-- **Sector cells come from the text tables; races and gates do not come from the games.** A sector's text id encodes
-  its cell (`2YX` in XBTF, `102YYXX` in X-Tension). Ownership and gates are set up by the compiled script
-  (`l/001.obj`, `STO2` bytecode, undecoded), so `games/*/data/sectors/sectors.json` reads them from elite-games.ru's
-  map images, and XBTF's stations per sector from its Excel map, positioned where that sheet draws them (1.5 km per
-  cell, our spacing). Decoding the script would replace all three.
+- **Sector cells and gates come from the games; races do not yet.** A sector's text id encodes its cell (`2YX` in
+  XBTF, `102YYXX` in X-Tension). The universe is built by the compiled script, `l/001.obj` (`STO2` bytecode, read by
+  `ScriptFile`; `openxt-import script` disassembles it). Its `class2000.BuildFromEditor` holds the map editor's data
+  as one array literal, which `ScriptUniverse` / `openxt-import universe` read: every sector's cell and gate mask,
+  matching the gates in `games/*/data/sectors/sectors.json` for every sector of both games. X-Tension's Getsu Fune
+  and the Xenon sector beyond it are added later by the plot, with runtime coordinates, so their gates stay as read
+  from the map. Ownership is not in those values, so race still comes from elite-games.ru's map images, and XBTF's
+  stations per sector from its Excel map, positioned where that sheet draws them (1.5 km per cell, our spacing).
+  Each sector's object records in the same literal, not decoded yet, should replace both.
 - **Stations render as their scenes.** `SceneParser` reads the scene `.pbd`s (`VER: 2;`) and the importer writes
   `scenes/NNNNN.json`: every part's body, position and rotation (turns about an axis, as a quaternion). Parts carry
   no scale in the file, yet only fit together with their bodies drawn about four times larger than alone, so

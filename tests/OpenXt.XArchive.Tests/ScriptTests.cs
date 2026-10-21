@@ -204,6 +204,92 @@ public sealed class ScriptFileTests
         ], lines);
     }
 
+    /// <summary>
+    /// Compiles a literal the way the game's compiler does: an array pushes its elements last to
+    /// first, then its count, then <see cref="ScriptOpcode.MakeArray"/>. Elements are ints or arrays.
+    /// </summary>
+    private static void EmitLiteral(List<ushort> code, object value)
+    {
+        if (value is object[] items)
+        {
+            for (int i = items.Length - 1; i >= 0; i--)
+                EmitLiteral(code, items[i]);
+            EmitLiteral(code, items.Length);
+            code.Add((ushort)ScriptOpcode.MakeArray);
+        }
+        else if ((int)value is >= 0 and <= 31)
+        {
+            code.Add((ushort)((int)ScriptOpcode.Const0 + (int)value));
+        }
+        else
+        {
+            int number = (int)value;
+            code.AddRange([(ushort)ScriptOpcode.Push32, (ushort)(number >> 16), (ushort)number]);
+        }
+    }
+
+    [Fact]
+    public void LiteralArraysIndexFromTheLastValuePushed()
+    {
+        List<ushort> code = [(ushort)ScriptOpcode.This];
+        EmitLiteral(code, new object[] { 1, new object[] { -7200000, 2 }, 40 });
+        code.Add((ushort)ScriptOpcode.Return);
+
+        ScriptLiteral literal = ScriptLiteral.FindLargestArray(
+            ScriptFile.Parse(new ScriptBuilder().Code([.. code]).Build()), 0, code.Count)!;
+
+        Assert.Equal(3, literal.Count);
+        Assert.Equal(1, literal[0].Number);
+        Assert.Equal([-7200000, 2], literal[1].Items!.Select(i => i.Number));
+        Assert.Equal(40, literal[2].Number);
+    }
+
+    [Fact]
+    public void ReadsSectorsAndConstantGates()
+    {
+        ScriptBuilder builder = new();
+        int build = builder.Name(ScriptUniverse.BuilderClassMethod);
+        int plot = builder.Name("Plot");
+        int addGate = builder.Name(ScriptUniverse.AddGateNative);
+
+        List<ushort> code = [0x0000];
+        EmitLiteral(code, new object[]
+        {
+            // marker, x − 1, y − 1, gate mask, objects…
+            new object[] { 2, 0, 0, (int)(SectorGates.South | SectorGates.East), new object[] { 0, 7, 17 } },
+            new object[] { 2, 1, 0, (int)SectorGates.West },
+            new object[] { 9, 5, 5, 0 },     // a different marker: the loop skips it
+        });
+        code.AddRange([(ushort)ScriptOpcode.StoreStack, 1, (ushort)ScriptOpcode.Return]);
+
+        int plotAddress = code.Count;
+        code.AddRange([0x000B, 0x0009, 0x000A, 0x000C, (ushort)ScriptOpcode.CallNative32, 0, (ushort)addGate,
+            (ushort)ScriptOpcode.Return]);
+
+        ScriptUniverse universe = ScriptUniverse.Read(ScriptFile.Parse(builder
+            .Code([.. code])
+            .Chunk("SYMB", 1, plotAddress, plot, 0)
+            .Chunk("OBJE", 1, 2000)
+            .Chunk("SYMB", 1, 1, build, 0)
+            .Build()))!;
+
+        Assert.Equal(2, universe.Sectors.Count);
+        Assert.Equal((1, 1, SectorGates.South | SectorGates.East), (universe.Sectors[0].X, universe.Sectors[0].Y, universe.Sectors[0].Gates));
+        Assert.Equal(3, Assert.Single(universe.Sectors[0].Objects).Count);
+        Assert.Equal((2, 1, SectorGates.West), (universe.Sectors[1].X, universe.Sectors[1].Y, universe.Sectors[1].Gates));
+
+        // GS_AddGate(side 2, y − 1 = 0, x − 1 = 1): the west gate of the sector at (2, 1).
+        Assert.Equal(new ScriptGate("Plot", 2, 1, SectorGates.West), Assert.Single(universe.ExtraGates));
+    }
+
+    [Fact]
+    public void ScriptWithoutEditorDataHasNoUniverse()
+    {
+        ScriptFile script = ScriptFile.Parse(new ScriptBuilder().Code(0, (ushort)ScriptOpcode.Return).Build());
+
+        Assert.Null(ScriptUniverse.Read(script));
+    }
+
     private static ScriptInstruction[] Sweep(ushort[] code)
     {
         List<ScriptInstruction> result = [];
@@ -269,5 +355,49 @@ public sealed class ScriptInstallationTests
         Assert.NotEmpty(branches);
         Assert.All(branches, b => Assert.Contains(b.Operand, starts));
         Assert.All(entryPoints, f => Assert.Contains(f.Address, starts));
+    }
+
+    public static TheoryData<string, int, int> KnownUniverses => new()
+    {
+        // game key, sectors in the editor data, gates the script adds with constant arguments
+        { "xbtf", 54, 0 },
+        { "xtension", 90, 1 },
+    };
+
+    /// <summary>
+    /// Every gate must have its partner on the neighbour's facing side: a wrong bit-to-side mapping
+    /// or a misread cell breaks that at once.
+    /// </summary>
+    [RequiresInstallTheory]
+    [MemberData(nameof(KnownUniverses))]
+    public void UniverseGatesPairUp(string gameKey, int sectors, int extraGates)
+    {
+        XInstall? install = InstallProbe.ByKey(gameKey);
+        if (install is null)
+            return;
+
+        using CatArchive archive = install.OpenArchive();
+        Assert.True(archive.TryGetEntry("l/001.obj", out CatEntry entry));
+        ScriptUniverse universe = ScriptUniverse.Read(ScriptFile.Parse(archive.Read(entry)))!;
+
+        Assert.Equal(sectors, universe.Sectors.Count);
+        Assert.Equal(extraGates, universe.ExtraGates.Count);
+
+        Dictionary<(int, int), SectorGates> cells = universe.Sectors.ToDictionary(s => (s.X, s.Y), s => s.Gates);
+        (SectorGates Side, int Dx, int Dy, SectorGates Opposite)[] sides =
+        [
+            (SectorGates.North, 0, -1, SectorGates.South), (SectorGates.South, 0, 1, SectorGates.North),
+            (SectorGates.West, -1, 0, SectorGates.East), (SectorGates.East, 1, 0, SectorGates.West),
+        ];
+
+        foreach (((int x, int y), SectorGates gates) in cells)
+        foreach ((SectorGates side, int dx, int dy, SectorGates opposite) in sides)
+        {
+            if (!gates.HasFlag(side))
+                continue;
+
+            Assert.True(cells.TryGetValue((x + dx, y + dy), out SectorGates neighbour) && neighbour.HasFlag(opposite),
+                $"{gameKey}: the {side} gate of ({x}, {y}) has no partner");
+        }
     }
 }
