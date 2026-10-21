@@ -50,6 +50,8 @@ internal static class Cli
                     StationCommands.RunStations(install, HasFlag(rest, "--json"))),
                 "wares" => WithInstall(rest, (install, _) =>
                     StationCommands.RunWares(install, HasFlag(rest, "--json"))),
+                "script" => WithInstall(rest, (install, positional) =>
+                    ScriptCommands.Run(install, positional.FirstOrDefault(), HasFlag(rest, "--summary"))),
                 "meshinfo" => CacheCommands.MeshInfo(ReadOption(rest, "--game") ?? "xbtf", Positionals(rest)),
                 "where" => Where(),
                 _ => Fail($"unknown verb '{verb}'"),
@@ -196,6 +198,7 @@ internal static class Cli
               ships [--json]              dump the ship table compiled into the game executable
               stations [--json]           dump its station table, with race and roster ids
               wares [--json]              dump its wares: the ware table plus every factory product
+              script [entry] [--summary]  disassemble a compiled script (default l/001.obj)
 
             Model verb:
               inspect <file>...           dump mesh statistics via Assimp
