@@ -53,7 +53,7 @@ internal static class Cli
                 "script" => WithInstall(rest, (install, positional) =>
                     ScriptCommands.Run(install, positional.FirstOrDefault(), HasFlag(rest, "--summary"))),
                 "universe" => WithInstall(rest, (install, _) =>
-                    UniverseCommands.Run(install, HasFlag(rest, "--json"), HasFlag(rest, "--objects"))),
+                    UniverseCommands.Run(install, HasFlag(rest, "--json"), HasFlag(rest, "--objects"), ReadOption(rest, "--update"))),
                 "meshinfo" => CacheCommands.MeshInfo(ReadOption(rest, "--game") ?? "xbtf", Positionals(rest)),
                 "where" => Where(),
                 _ => Fail($"unknown verb '{verb}'"),
@@ -131,7 +131,7 @@ internal static class Cli
     }
 
     /// <summary>Options that take a following value, so it is not mistaken for a positional.</summary>
-    private static readonly string[] ValueOptions = ["--install", "--game", "--scale", "--scene-scale"];
+    private static readonly string[] ValueOptions = ["--install", "--game", "--scale", "--scene-scale", "--update"];
 
     private static bool HasFlag(string[] args, string flag) =>
         args.Contains(flag, StringComparer.Ordinal);
@@ -201,8 +201,9 @@ internal static class Cli
               stations [--json]           dump its station table, with race and roster ids
               wares [--json]              dump its wares: the ware table plus every factory product
               script [entry] [--summary]  disassemble a compiled script (default l/001.obj)
-              universe [--json] [--objects]
-                                          sectors, gates, owners and stations as the game's script builds them
+              universe [--json] [--objects] [--update <sectors.json>]
+                                          sectors, gates, owners and stations as the game's script builds them;
+                                          --update rewrites that file's station lists from the script
 
             Model verb:
               inspect <file>...           dump mesh statistics via Assimp

@@ -195,14 +195,13 @@ Three things to know before touching the pipeline:
   `ScriptUniverse` / `openxt-import universe` read: every sector's cell, gates and owner, and every object in it with
   its position, race and wares. A record's kind means a different thing in each game (XBTF's are mostly X-Tension's
   plus one), so the reader learns kinds from each script's own `BuildObject`; a station's identity is its text id
-  over ten. Against `games/*/data/sectors/sectors.json` the gates match everywhere, every owned sector's race
-  matches, and XBTF's stations match elite-games.ru's Excel map in 45 of 51 sectors (the rest are a "Pirate Anarchy
-  Port" for its pirate base, an "Unknown Xenon Ship" for a Xenon station, and Company Pride's silicon mine, which the
-  map calls an ore mine). Sectors the script gives no owner are coloured on those maps — Xenon in XBTF, pirate in
-  X-Tension — and that is still where their `race` comes from. X-Tension's Getsu Fune and the Xenon sector beyond it
-  are added later by the plot, with runtime coordinates, so their gates stay as read from the map. Positions are
-  east/up/north in world units, `ScriptUniverse.UnitsPerMetre` (65536/294 ≈ 222.9) to the metre — the factor the
-  HUD's target-distance readout uses, so gates stand 32.3 km out; `sectors.json` still has its own 1.5 km spacing.
+  over ten. `openxt-import universe --update` writes the stations into `games/*/data/sectors/sectors.json` where the
+  script places them; gates and owned sectors' races there match the script everywhere. Sectors the script gives
+  no owner are coloured on elite-games.ru's maps — Xenon in XBTF, pirate in X-Tension — and that is still where
+  their `race` comes from. X-Tension's Getsu Fune and the Xenon sector beyond it are added later by the plot, with
+  runtime coordinates, so their gates stay as read from the map and they have no stations. Positions are east/up/
+  north in world units, `ScriptUniverse.UnitsPerMetre` (65536/294 ≈ 222.9) to the metre — the factor the HUD's
+  target-distance readout uses, so gates stand 32.3 km out.
   Ware categories (`ScriptWares`) were matched against recipes and station lists, not read from the engine.
 - **Stations render as their scenes.** `SceneParser` reads the scene `.pbd`s (`VER: 2;`) and the importer writes
   `scenes/NNNNN.json`: every part's body, position and rotation (turns about an axis, as a quaternion). Parts carry

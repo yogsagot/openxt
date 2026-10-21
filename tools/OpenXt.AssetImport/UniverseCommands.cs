@@ -1,4 +1,6 @@
+using System.Globalization;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using OpenXt.XArchive;
 
 namespace OpenXt.AssetImport;
@@ -14,7 +16,17 @@ public static class UniverseCommands
     private static readonly SectorGates[] Sides =
         [SectorGates.North, SectorGates.South, SectorGates.West, SectorGates.East];
 
-    public static int Run(XInstall install, bool json, bool objects)
+    /// <summary>
+    /// Stations the script places whose text id no station record has, and the roster entry that
+    /// stands in for each: the same ones elite-games.ru's XBTF map shows in their places.
+    /// </summary>
+    private static readonly Dictionary<int, string> StandIns = new()
+    {
+        [3761] = "pirate_base",     // "Pirate Anarchy Port"; the pirate base record is 3781
+        [3601] = "xenon_station",   // "Unknown Xenon Ship", in XBTF's Xenon sector 7-6
+    };
+
+    public static int Run(XInstall install, bool json, bool objects, string? update = null)
     {
         using CatArchive archive = install.OpenArchive();
 
@@ -34,6 +46,8 @@ public static class UniverseCommands
         TextTable names = ShipCommands.ReadEnglish(install) ?? throw new InvalidDataException("no English text table");
         Naming naming = new(install, universe, names);
 
+        if (update is not null)
+            return Update(install, universe, naming, update);
         if (json)
             WriteJson(install.Game, universe, naming);
         else
@@ -97,6 +111,100 @@ public static class UniverseCommands
             }
 
             return null;
+        }
+
+        /// <summary><see cref="Station"/>, falling back to the stand-ins for text ids no record has.</summary>
+        public string? PlacedStation(ScriptObject item) =>
+            Station(item) ?? (item.StationTextId is { } textId ? StandIns.GetValueOrDefault(textId) : null);
+    }
+
+    /// <summary>
+    /// Rewrites the station lists of a <c>sectors.json</c> from the script, leaving everything else —
+    /// comments, ids, names, race, gates, sectors the script does not build — as it is, one sector per
+    /// line. Gates and owners that disagree with the file are reported, not changed: the file's are
+    /// curated, and for unowned sectors deliberately so.
+    /// </summary>
+    private static int Update(XInstall install, ScriptUniverse universe, Naming naming, string path)
+    {
+        Dictionary<(int, int), ScriptSector> cells = universe.Sectors.ToDictionary(s => (s.X, s.Y));
+        string[] lines = File.ReadAllLines(path);
+        int placed = 0, sectors = 0;
+        List<string> notes = [];
+
+        for (int i = 0; i < lines.Length; i++)
+        {
+            string trimmed = lines[i].TrimStart();
+            if (!trimmed.StartsWith("{\"id\"", StringComparison.Ordinal))
+                continue;
+
+            string indent = lines[i][..^trimmed.Length];
+            bool comma = trimmed.EndsWith(',');
+            JsonObject sector = JsonNode.Parse(comma ? trimmed[..^1] : trimmed)!.AsObject();
+            int x = sector["x"]!.GetValue<int>(), y = sector["y"]!.GetValue<int>();
+            string id = sector["id"]!.GetValue<string>();
+
+            if (!cells.TryGetValue((x, y), out ScriptSector? script))
+            {
+                notes.Add($"{id}: not in the editor data; left as it is");
+                continue;
+            }
+
+            string[] gates = Sides.Where(side => script.Gates.HasFlag(side))
+                .Select(side => side.ToString().ToLowerInvariant()).ToArray();
+            string[] fileGates = sector["gates"]!.AsArray().Select(g => g!.GetValue<string>()).ToArray();
+            if (!gates.Order().SequenceEqual(fileGates.Order()))
+                notes.Add($"{id}: gates {string.Join(",", fileGates)} here, {string.Join(",", gates)} in the script");
+
+            string? owner = naming.Race(script.Owner);
+            string race = sector["race"]!.GetValue<string>();
+            if (owner is not null && owner != race)
+                notes.Add($"{id}: race {race} here, {owner} in the script");
+
+            JsonArray stations = [];
+            foreach (ScriptObject item in script.Objects.Where(o => o.IsStation))
+            {
+                if (naming.PlacedStation(item) is not { } station)
+                {
+                    notes.Add($"{id}: skipped {naming.Text(item.StationTextId!.Value) ?? "?"} ({item.StationTextId}), no roster entry");
+                    continue;
+                }
+
+                stations.Add(new JsonObject
+                {
+                    ["station"] = station,
+                    ["x"] = Metres(item.East),
+                    ["y"] = Metres(item.Up),
+                    ["z"] = Metres(item.North),
+                });
+            }
+
+            sector["stations"] = stations;
+            placed += stations.Count;
+            sectors++;
+            lines[i] = indent + Inline(sector) + (comma ? "," : "");
+        }
+
+        File.WriteAllLines(path, lines);
+        Console.WriteLine($"{path}: {placed} stations in {sectors} sectors ({install.DisplayName})");
+        foreach (string note in notes)
+            Console.WriteLine($"  {note}");
+        return 0;
+    }
+
+    /// <summary>JSON on one line in the files' style: <c>{"key": value, …}</c>, metres to one decimal.</summary>
+    private static string Inline(JsonNode? node)
+    {
+        switch (node)
+        {
+            case JsonObject obj:
+                return "{" + string.Join(", ", obj.Select(p => $"{JsonSerializer.Serialize(p.Key)}: {Inline(p.Value)}")) + "}";
+            case JsonArray array:
+                return "[" + string.Join(", ", array.Select(Inline)) + "]";
+            case JsonValue value when value.TryGetValue(out double d) && value.GetValueKind() == JsonValueKind.Number
+                                                                    && !value.TryGetValue(out int _):
+                return d.ToString("0.0", CultureInfo.InvariantCulture);
+            default:
+                return node?.ToJsonString(new JsonSerializerOptions { Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }) ?? "null";
         }
     }
 
@@ -252,7 +360,7 @@ public static class UniverseCommands
         writer.WriteEndArray();
     }
 
-    private static double Metres(int units) => Math.Round(units / ScriptUniverse.UnitsPerMetre, 1);
+    private static double Metres(int units) => Math.Round(units / ScriptUniverse.UnitsPerMetre);
 
     /// <summary>Lower-case side names in the order <c>sectors.json</c> lists them.</summary>
     private static IEnumerable<string> GateNames(SectorGates gates) =>

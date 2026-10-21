@@ -26,7 +26,7 @@ public class BundledGamesTests
 
     [Theory]
     [InlineData("xbtf", "Argon Prime", 8)]
-    [InlineData("xtension", "Home of Light", 0)]
+    [InlineData("xtension", "Home of Light", 9)]
     public void BootsCleanWithItsStations(string gameId, string startSector, int stations)
     {
         ModHost host = ModHost.Load(new ModHostOptions
